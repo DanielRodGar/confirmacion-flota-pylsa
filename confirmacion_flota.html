@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirmación de Parque Vehicular · PYLSA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-base:#1B2024;
+    --bg-panel:#232A2F;
+    --bg-panel-2:#2B3239;
+    --bg-raised:#323A41;
+    --accent-amber:#E8A93B;
+    --accent-amber-dim:#4A3B22;
+    --accent-teal:#4FA6A0;
+    --accent-teal-dim:#1F3735;
+    --accent-red:#D9614F;
+    --text-primary:#ECEEEA;
+    --text-muted:#97A0A6;
+    --text-faint:#5E666C;
+    --border:#3A4249;
+    --border-light:#454E56;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg-base);
+    color:var(--text-primary);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding-bottom:110px;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:0 18px;}
+
+  /* HEADER */
+  header{
+    background:linear-gradient(180deg,#20262B 0%, #1B2024 100%);
+    border-bottom:1px solid var(--border);
+    padding:28px 0 22px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::before{
+    content:"";
+    position:absolute; top:0; left:0; right:0; height:4px;
+    background:repeating-linear-gradient(135deg, var(--accent-amber) 0 14px, #1B2024 14px 28px);
+    opacity:.55;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--text-faint); margin-bottom:10px;
+  }
+  h1{
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    font-size:clamp(28px,7vw,40px);
+    letter-spacing:.01em;
+    text-transform:uppercase;
+    margin:0 0 6px;
+    line-height:1.02;
+  }
+  .subhead{color:var(--text-muted); font-size:14.5px; line-height:1.5; max-width:52ch;}
+  .progress-row{
+    display:flex; align-items:center; gap:12px; margin-top:20px;
+  }
+  .progress-track{
+    flex:1; height:6px; border-radius:3px; background:var(--bg-panel-2); overflow:hidden;
+    border:1px solid var(--border);
+  }
+  .progress-fill{
+    height:100%; background:var(--accent-teal); width:0%; transition:width .25s ease;
+  }
+  .progress-label{
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--text-muted); white-space:nowrap;
+  }
+
+  /* UNIT CARDS */
+  .units{padding:22px 0 8px; display:flex; flex-direction:column; gap:14px;}
+  .card{
+    background:var(--bg-panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px 16px 18px;
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .card.is-ok{border-color:var(--accent-teal); background:linear-gradient(180deg, var(--bg-panel) 0%, var(--accent-teal-dim) 340%);}
+  .card.is-vacante{border-color:var(--accent-amber);}
+  .card-top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:12px;}
+  .veh-name{font-family:'Oswald',sans-serif; font-weight:600; font-size:19px; text-transform:uppercase; letter-spacing:.01em;}
+  .veh-modelo{color:var(--text-muted); font-size:12.5px; font-family:'IBM Plex Mono',monospace; margin-top:2px;}
+
+  .tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px; font-weight:600;
+    color:#D8DCDD;
+    background:linear-gradient(180deg,#3D454C,#2A3136);
+    border:1px solid #4B545C;
+    border-radius:5px;
+    padding:5px 9px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06), inset 0 -1px 2px rgba(0,0,0,.35), 0 1px 0 rgba(0,0,0,.3);
+    position:relative;
+    white-space:nowrap;
+  }
+  .tag::before, .tag::after{
+    content:""; position:absolute; top:50%; width:3px; height:3px; border-radius:50%;
+    background:#1B2024; box-shadow: inset 0 1px 1px rgba(0,0,0,.6);
+    transform:translateY(-50%);
+  }
+  .tag::before{left:4px;}
+  .tag::after{right:4px;}
+  .tag span{padding:0 6px;}
+
+  .row-line{display:flex; gap:8px; font-size:13px; color:var(--text-muted); margin-bottom:4px; font-family:'IBM Plex Mono',monospace;}
+  .row-line b{color:var(--text-primary); font-weight:600;}
+
+  .field-group{margin-top:14px;}
+  .field-label{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); margin-bottom:7px; font-weight:600;}
+
+  .seg{display:flex; border:1px solid var(--border-light); border-radius:7px; overflow:hidden;}
+  .seg button{
+    flex:1; background:var(--bg-panel-2); color:var(--text-muted); border:none; padding:9px 6px;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:12.5px; cursor:pointer;
+    transition:background .15s, color .15s;
+  }
+  .seg button + button{border-left:1px solid var(--border-light);}
+  .seg button.active.ok{background:var(--accent-teal); color:#0F1E1C;}
+  .seg button.active.change{background:var(--accent-amber); color:#2A1D08;}
+  .seg button.active.gone{background:var(--accent-red); color:#2A100C;}
+  .card.is-gone{border-color:var(--accent-red); background:linear-gradient(180deg, var(--bg-panel) 0%, #3A211D 340%); opacity:.85;}
+
+  .plate-input{
+    margin-top:10px; display:none;
+  }
+  .plate-input.show{display:block;}
+  input[type="text"], select{
+    width:100%; background:var(--bg-panel-2); border:1px solid var(--border-light); border-radius:7px;
+    padding:10px 12px; color:var(--text-primary); font-family:'IBM Plex Mono',monospace; font-size:14px;
+    letter-spacing:.03em;
+  }
+  select{font-family:'Inter',sans-serif; letter-spacing:normal; cursor:pointer;}
+  select:invalid, select option[value=""]{color:var(--text-faint);}
+  input[type="text"]::placeholder{color:var(--text-faint); font-family:'Inter',sans-serif;}
+  input[type="text"]:focus, select:focus{outline:2px solid var(--accent-teal); outline-offset:0; border-color:var(--accent-teal);}
+
+  .operador-row{display:flex; gap:8px; align-items:center; margin-top:8px;}
+  .operador-row input[type="text"]{flex:1;}
+  .name-fields{display:flex; gap:8px; flex-wrap:wrap;}
+  .name-fields input[type="text"]{flex:1; min-width:100px;}
+  .vacante-btn{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:12.5px;
+    background:var(--bg-panel-2); color:var(--text-muted); border:1px solid var(--border-light);
+    border-radius:7px; padding:10px 12px; cursor:pointer; white-space:nowrap;
+    transition:background .15s,color .15s,border-color .15s;
+    margin-top:8px; width:100%;
+  }
+  .vacante-btn.active{background:var(--accent-amber-dim); color:var(--accent-amber); border-color:var(--accent-amber);}
+
+  .photo-zone{
+    margin-top:10px; display:flex; align-items:center; gap:12px;
+  }
+  .photo-thumb{
+    width:64px; height:64px; border-radius:7px; object-fit:cover; border:1px solid var(--border-light);
+    background:var(--bg-panel-2); flex-shrink:0; display:none;
+  }
+  .photo-thumb.show{display:block;}
+  .photo-placeholder{
+    width:64px; height:64px; border-radius:7px; border:1px dashed var(--border-light);
+    background:var(--bg-panel-2); flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    color:var(--text-faint);
+  }
+  .photo-placeholder.hide{display:none;}
+  .photo-btn{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:13px;
+    background:var(--bg-panel-2); color:var(--text-primary); border:1px solid var(--border-light);
+    border-radius:7px; padding:10px 14px; cursor:pointer; flex:1; text-align:left;
+    display:flex; align-items:center; gap:8px;
+  }
+  .photo-btn.has-photo{border-color:var(--accent-teal); color:var(--accent-teal);}
+  .photo-filename{color:var(--text-muted); font-size:12px; font-family:'IBM Plex Mono',monospace; display:block; margin-top:2px;}
+  input[type="file"]{display:none;}
+
+  /* FOOTER */
+  .footer-bar{
+    position:fixed; bottom:0; left:0; right:0;
+    background:rgba(27,32,36,.92); backdrop-filter:blur(6px);
+    border-top:1px solid var(--border);
+    padding:14px 18px calc(14px + env(safe-area-inset-bottom));
+  }
+  .footer-inner{max-width:720px; margin:0 auto; display:flex; align-items:center; gap:14px;}
+  .footer-status{font-size:12.5px; color:var(--text-muted); flex:1; font-family:'IBM Plex Mono',monospace;}
+  .submit-btn{
+    background:var(--accent-teal); color:#0F1E1C; border:none; border-radius:8px;
+    font-family:'Oswald',sans-serif; font-weight:600; font-size:15px; letter-spacing:.02em; text-transform:uppercase;
+    padding:13px 22px; cursor:pointer; transition:opacity .15s, transform .1s;
+  }
+  .submit-btn:disabled{opacity:.4; cursor:not-allowed;}
+  .submit-btn:not(:disabled):active{transform:scale(.98);}
+
+  /* STATES */
+  .center-screen{
+    min-height:80vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:40px 20px;
+  }
+  .center-screen h1{font-size:28px;}
+  .center-screen p{color:var(--text-muted); max-width:44ch; margin:10px 0 26px; line-height:1.6;}
+  .branch-list{display:flex; flex-direction:column; gap:8px; width:100%; max-width:420px;}
+  .branch-list a{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:8px;
+    padding:12px 14px; color:var(--text-primary); text-decoration:none; font-size:14px; font-weight:600;
+  }
+  .branch-list a span{color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-weight:400; font-size:12px;}
+
+  .ok-icon{
+    width:64px;height:64px;border-radius:50%; background:var(--accent-teal-dim); border:2px solid var(--accent-teal);
+    display:flex;align-items:center;justify-content:center; margin-bottom:6px;
+  }
+  .err-banner{
+    background:var(--accent-amber-dim); border:1px solid var(--accent-amber); color:var(--accent-amber);
+    border-radius:8px; padding:12px 14px; font-size:13px; margin-top:14px; text-align:left; line-height:1.5;
+  }
+  .link-btn{background:none;border:none;color:var(--accent-teal);text-decoration:underline;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;padding:0;}
+
+  .add-unit-zone{padding:6px 0 4px;}
+  .add-unit-btn{
+    width:100%; background:none; border:1px dashed var(--border-light); color:var(--text-muted);
+    border-radius:9px; padding:13px; font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px;
+    cursor:pointer; transition:border-color .15s,color .15s;
+  }
+  .add-unit-btn:hover{border-color:var(--accent-amber); color:var(--accent-amber);}
+  .gate-card{border-color:var(--border-light);}
+  .gate-card .seg button.active.ok{background:var(--accent-teal); color:#0F1E1C;}
+  .gate-card .seg button.active.gone{background:var(--accent-amber); color:#2A1D08;}
+  .card.extra-card{border-style:dashed; border-color:var(--accent-amber);}
+  .conflict-banner{
+    background:var(--accent-amber-dim); border:1px solid var(--accent-amber); color:var(--accent-amber);
+    border-radius:7px; padding:9px 11px; font-size:12.5px; line-height:1.5; margin-bottom:12px;
+  }
+  .conflict-banner b{color:#F5C878;}
+  .extra-card .card-top{align-items:center;}
+  .remove-extra-btn{
+    background:none; border:none; color:var(--text-faint); cursor:pointer; font-size:18px; line-height:1;
+    padding:2px 4px;
+  }
+  .field-row-2{display:flex; gap:8px;}
+  .field-row-2 > div{flex:1;}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+/* =========================================================
+   DATOS DE FLOTA — generados desde Relación_Unidades_PYLSA_2026.xlsx
+   ========================================================= */
+const FLEET_DATA = {"acayucan": {"nombre": "ACAYUCAN", "unidades": [{"vehiculo": "HYUNDAI", "serie": "3NFCA17H7KM000019", "placa": "XY6954B", "modelo": "2019", "numero_economico": "363"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A5PK877742", "placa": "XR5288B", "modelo": "2023", "numero_economico": "314"}, {"vehiculo": "REMOLQUE", "serie": "3BZBP1416MC003224", "placa": "4XX262B", "modelo": "2019", "numero_economico": "14"}]}, "acerofertas": {"nombre": "ACEROFERTAS", "unidades": [{"vehiculo": "NISSAN", "serie": "3N6AD35A1PK878399", "placa": "XR5201B", "modelo": "2023", "numero_economico": "307"}, {"vehiculo": "REMOLQUE", "serie": "3BZBP1412KC001130", "placa": "1XX331A", "modelo": "2019", "numero_economico": "1"}]}, "cancun": {"nombre": "CANCÚN", "unidades": [{"vehiculo": "CITY 4", "serie": "3JA1SBB28TK007033", "placa": "XT8614B", "modelo": "2026", "numero_economico": "410"}, {"vehiculo": "RABÓN", "serie": "3HAMMAAR0GL379146", "placa": "XK0510B", "modelo": "2016", "numero_economico": "160"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A4PK865842", "placa": "XN8758B", "modelo": "2024", "numero_economico": "334"}, {"vehiculo": "REMOLQUE", "serie": "3BZBP1415MC003229", "placa": "4XX494A", "modelo": "2019", "numero_economico": "46"}]}, "cardel": {"nombre": "CARDEL", "unidades": [{"vehiculo": "HYUNDAI", "serie": "3NFCA17H6KM000044", "placa": "XG6891A", "modelo": "2019", "numero_economico": "367"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A1PK877768", "placa": "XR5248B", "modelo": "2024", "numero_economico": "324"}, {"vehiculo": "REMLQUE", "serie": "3BZBP1414KC001131", "placa": "1XX332A", "modelo": "2019", "numero_economico": "11"}]}, "cardenas": {"nombre": "CÁRDENAS", "unidades": [{"vehiculo": "HYUNDAI", "serie": "3NFCA17H3KM000034", "placa": "XY6951B", "modelo": "2019", "numero_economico": "352"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A6PK878494", "placa": "XR5219B", "modelo": "2023", "numero_economico": "313"}, {"vehiculo": "REMOLQUE", "serie": "3BZBP1417MC003233", "placa": "4XX493A", "modelo": "2019", "numero_economico": "68"}]}, "centro": {"nombre": "CENTRO", "unidades": [{"vehiculo": "HYUNDAI", "serie": "3NFCA17H5KM000035", "placa": "XG1295A", "modelo": "2019", "numero_economico": "366"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A5PK870385", "placa": "XR5202B", "modelo": "2023", "numero_economico": "323"}, {"vehiculo": "REMOLQUE", "serie": "3BZBP1416KC001132", "placa": "1XX333A", "modelo": "2019", "numero_economico": "16"}]}, "coatzacoalcos-1": {"nombre": "COATZACOALCOS 1", "unidades": [{"vehiculo": "CITY 4", "serie": "3JA1SBB20SK006473", "placa": "XS5197B", "modelo": "2025", "numero_economico": "405"}, {"vehiculo": "RABÓN", "serie": "3HAMMAAR0DL313028", "placa": "XG7042A", "modelo": "2013", "numero_economico": "158"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A4PK885444", "placa": "XR5244B", "modelo": "2023", "numero_economico": "325"}, {"vehiculo": "REMOLQUE", "serie": "3BZBP1412MC003222", "placa": "7XX499B", "modelo": "2021", "numero_economico": "71"}]}, "coatzacoalcos-2": {"nombre": "COATZACOALCOS 2", "unidades": [{"vehiculo": "CITY 5", "serie": "3JA1SCB21SK006309", "placa": "YB2263B", "modelo": "2025", "numero_economico": "508"}, {"vehiculo": "JAC X12000", "serie": "3GAPJ1CA3TM029007", "placa": "YD0545B", "modelo": "2026", "numero_economico": "602"}]}, "comalcalco": {"nombre": "COMALCALCO", "unidades": [{"vehiculo": "CITY 4", "serie": "3JA1SBB24SK006475", "placa": "XS5198B", "modelo": "2025", "numero_economico": "404"}, {"vehiculo": "JAC X12000", "serie": "3GAPJ1CA0TM029014", "placa": "YD0053B", "modelo": "2026", "numero_economico": "603"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A4PK870717", "placa": "XR5241B", "modelo": "2023", "numero_economico": "330"}, {"vehiculo": "REMOLQUE", "serie": "3BZBP1411MC003230", "placa": "4XX495A", "modelo": "2020", "numero_economico": "55"}]}, "cordoba-1": {"nombre": "CÓRDOBA 1", "unidades": [{"vehiculo": "HYUNDAI", "serie": "3NFCA17H7KM000036", "placa": "XY6929B", "modelo": "2019", "numero_economico": "353"}, {"vehiculo": "TORTON", "serie": "3HAMSAAR6GL415539", "placa": "YD0982A", "modelo": "2016", "numero_economico": "282"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A5PK883668", "placa": "XR2737B", "modelo": "2023", "numero_economico": "318"}, {"vehiculo": "REMOLQUE", "serie": "3BZBP1412JC008252", "placa": "1YA9832", "modelo": "2018", "numero_economico": "40"}]}, "cordoba-2": {"nombre": "CÓRDOBA 2", "unidades": [{"vehiculo": "NISSAN", "serie": "3N6AD35A4PK878431", "placa": "XR2619B", "modelo": "2023", "numero_economico": "331"}, {"vehiculo": "REMOLQUE", "serie": "3BZBP1412JC008252", "placa": "4XX256B", "modelo": "2018", "numero_economico": "57"}]}, "cosamaloapan": {"nombre": "COSAMALOAPAN", "unidades": [{"vehiculo": "NISSAN", "serie": "3N6AD35A9PK870230", "placa": "XR2735B", "modelo": "2023", "numero_economico": "306"}, {"vehiculo": "REMOLQUE", "serie": "3BZBP1412JC008252", "placa": "1YA9832", "modelo": "2018", "numero_economico": "42"}]}, "golfo": {"nombre": "GOLFO", "unidades": [{"vehiculo": "NISSAN", "serie": "3N6AD35A1PK880945", "placa": "XR5206B", "modelo": "2023", "numero_economico": "315"}, {"vehiculo": "REMOLQUE", "serie": "3BZP1410KC001112", "placa": "1XX207A", "modelo": "2019", "numero_economico": "12"}]}, "matriz": {"nombre": "MATRIZ", "unidades": [{"vehiculo": "CITY 5", "serie": "3JA1SCB24RK005696", "placa": "XU4555B", "modelo": "2024", "numero_economico": "501"}, {"vehiculo": "CITY 5", "serie": "3JA1SCB28RK005104", "placa": "YB2307B", "modelo": "2024", "numero_economico": "502"}, {"vehiculo": "JAC X12000", "serie": "3GAPJ1CA4TM029033", "placa": "YD0794B", "modelo": "2026", "numero_economico": "605"}, {"vehiculo": "TORTON", "serie": "3ALHCYDJ3LDLT5331", "placa": "XJ5992A", "modelo": "2020", "numero_economico": "289"}, {"vehiculo": "TORTON", "serie": "3HAMSAAR9GL415549", "placa": "YD0983A", "modelo": "2016", "numero_economico": "287"}, {"vehiculo": "TORTON", "serie": "3HAMSAAR2GL415540", "placa": "YD0981A", "modelo": "2013", "numero_economico": "288"}, {"vehiculo": "TORTON", "serie": "3HAMSAAR5GL415550", "placa": "YD1204A", "modelo": "2016", "numero_economico": "280"}, {"vehiculo": "TORTON", "serie": "3HAMSAAR6DL358125", "placa": "XG7023A", "modelo": "2013", "numero_economico": "183"}, {"vehiculo": "TORTON", "serie": "3HAMSAAR6HL573025", "placa": "XK0509B", "modelo": "2017", "numero_economico": "285"}, {"vehiculo": "TORTON", "serie": "3HAMSAARXDL358127", "placa": "XG7025A", "modelo": "2013", "numero_economico": "188"}]}, "merida-1": {"nombre": "MÉRIDA 1", "unidades": [{"vehiculo": "CITY 4", "serie": "3JA1SBB25TK006941", "placa": "XT3295B", "modelo": "2026", "numero_economico": "406"}, {"vehiculo": "RABÓN", "serie": "3HAMMAAR7KL700544", "placa": "XH1539A", "modelo": "2017", "numero_economico": "162"}, {"vehiculo": "TORTON", "serie": "3HAMSAAR8HL573026", "placa": "XF6465B", "modelo": "2019", "numero_economico": "286"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A2PK880226", "placa": "XR5287B", "modelo": "2023", "numero_economico": "335"}]}, "merida-2": {"nombre": "MÉRIDA 2", "unidades": [{"vehiculo": "CITY 4", "serie": "3JA1SBB26TK007032", "placa": "XT8741B", "modelo": "2026", "numero_economico": "408"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A1PK882484", "placa": "XR2738B", "modelo": "2023", "numero_economico": "333"}]}, "merida-3": {"nombre": "MÉRIDA 3", "unidades": [{"vehiculo": "NISSAN", "serie": "3N6AD35A5PK870063", "placa": "XR5247B", "modelo": "2023", "numero_economico": "338"}]}, "merida-4": {"nombre": "MÉRIDA 4", "unidades": [{"vehiculo": "NISSAN", "serie": "3N6AD35AXPK878367", "placa": "XR5246B", "modelo": "2023", "numero_economico": "337"}]}, "minatitlan": {"nombre": "MINATITLÁN", "unidades": [{"vehiculo": "NISSAN", "serie": "3N6AD35A3PK878467", "placa": "XR4734B", "modelo": "2023", "numero_economico": "305"}, {"vehiculo": "HYUNDAI", "serie": "3NFCA17H2KM000056", "placa": "XG6893A", "modelo": "2019", "numero_economico": "371"}]}, "orizaba-1": {"nombre": "ORIZABA 1", "unidades": [{"vehiculo": "CITY 5", "serie": "3JA1SCB23RK005981", "placa": "YB2262B", "modelo": "2024", "numero_economico": "503"}, {"vehiculo": "JAC X12000", "serie": "3GAPJ1CA0TM029031", "placa": "YD0790B", "modelo": "2026", "numero_economico": "606"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A7PK883672", "placa": "XR2734B", "modelo": "2023", "numero_economico": "332"}]}, "orizaba-2": {"nombre": "ORIZABA 2", "unidades": [{"vehiculo": "NISSAN", "serie": "3N6AD35A2PK870232", "placa": "XR5245B", "modelo": "2023", "numero_economico": "316"}]}, "playa-del-carmen": {"nombre": "PLAYA DEL CARMEN", "unidades": [{"vehiculo": "CITY 4", "serie": "3JA1SBB2XTK007034", "placa": "XT8615B", "modelo": "2026", "numero_economico": "409"}]}, "poza-rica": {"nombre": "POZA RICA", "unidades": [{"vehiculo": "CITY 4", "serie": "3JA1SBB23SK006483", "placa": "XS5222B", "modelo": "2025", "numero_economico": "401"}, {"vehiculo": "NISSAN", "serie": "3N6AD35AXPK883665", "placa": "XR5250B", "modelo": "2023", "numero_economico": "312"}]}, "puebla": {"nombre": "PUEBLA", "unidades": [{"vehiculo": "HYUNDAI", "serie": "3NFCA17H8KM000045", "placa": "XY6953B", "modelo": "2019", "numero_economico": "379"}, {"vehiculo": "RABÓN", "serie": "3HAMMAAR3KL550304", "placa": "XH3686A", "modelo": "2019", "numero_economico": "161"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A1PK874823", "placa": "XR5220B", "modelo": "2023", "numero_economico": "301"}]}, "san-andres-1": {"nombre": "SAN ANDRÉS 1", "unidades": [{"vehiculo": "NISSAN", "serie": "3N6AD35A7PK870226", "placa": "XR2736B", "modelo": "2023", "numero_economico": "319"}]}, "san-andres-2": {"nombre": "SAN ANDRÉS 2", "unidades": [{"vehiculo": "CITY 4", "serie": "3JA1SBB25SK006484", "placa": "XS5221B", "modelo": "2025", "numero_economico": "402"}, {"vehiculo": "JAC X12000", "serie": "3GAPJ1CAXTM029005", "placa": "XU4557B", "modelo": "2026", "numero_economico": "601"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A7PK865270", "placa": "XR4735B", "modelo": "2023", "numero_economico": "320"}]}, "sur": {"nombre": "SUR", "unidades": [{"vehiculo": "HYUNDAI", "serie": "3NFCA17H5KM000018", "placa": "XG5683A", "modelo": "2019", "numero_economico": "358"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A6PK865597", "placa": "XR5242B", "modelo": "2023", "numero_economico": "304"}]}, "tejeria": {"nombre": "TEJERÍA", "unidades": [{"vehiculo": "HYUNDAI", "serie": "3NFCA17H0KM000055", "placa": "XY6952B", "modelo": "2019", "numero_economico": "380"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A1PK873803", "placa": "XR5207B", "modelo": "2023", "numero_economico": "311"}]}, "tierra-blanca": {"nombre": "TIERRA BLANCA", "unidades": [{"vehiculo": "CITY 5", "serie": "3JA1SCB21RK005980", "placa": "YB2306B", "modelo": "2024", "numero_economico": "504"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A5PK870970", "placa": "XR2740B", "modelo": "2023", "numero_economico": "321"}]}, "tuxtepec-1": {"nombre": "TUXTEPEC 1", "unidades": [{"vehiculo": "CITY 5", "serie": "3JA1SCB21RK005980", "placa": "YB2284B", "modelo": "2024", "numero_economico": "505"}, {"vehiculo": "NISSAN", "serie": "3N6AD35AXPK870544", "placa": "XR2673B", "modelo": "2023", "numero_economico": "322"}]}, "tuxtepec-2": {"nombre": "TUXTEPEC 2", "unidades": [{"vehiculo": "RABÓN", "serie": "3HAMMAAR4KL550263", "placa": "XP9617B", "modelo": "2019", "numero_economico": "163"}, {"vehiculo": "NISSAN", "serie": "3N6AD35AXPK870348", "placa": "XR5290B", "modelo": "2023", "numero_economico": "339"}]}, "tuxtla-gtz-1": {"nombre": "TUXTLA GTZ 1", "unidades": [{"vehiculo": "NISSAN", "serie": "3N6AD35A4PK871401", "placa": "XR5283B", "modelo": "2023", "numero_economico": "328"}]}, "tuxtla-gtz-2": {"nombre": "TUXTLA GTZ 2", "unidades": [{"vehiculo": "NISSAN", "serie": "3N6AD35A9PK870423", "placa": "XR5284B", "modelo": "2023", "numero_economico": "327"}]}, "tuxtla-gtz-3": {"nombre": "TUXTLA GTZ 3", "unidades": [{"vehiculo": "CITY 4", "serie": "3JA1SBB22SK006474", "placa": "XS5199B", "modelo": "2025", "numero_economico": "403"}, {"vehiculo": "JAC X12000", "serie": "3GAPJ1CA9TM029030", "placa": "YD0754B", "modelo": "2026", "numero_economico": "604"}, {"vehiculo": "NISSAN", "serie": "3N6AD35AXPK883424", "placa": "XR2739B", "modelo": "2023", "numero_economico": "329"}]}, "villahermosa-1": {"nombre": "VILLAHERMOSA 1", "unidades": [{"vehiculo": "CITY 5", "serie": "3JA1SCB25RK005982", "placa": "YB2264B", "modelo": "2024", "numero_economico": "506"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A6PK865731", "placa": "XR5243B", "modelo": "2023", "numero_economico": "310"}]}, "villahermosa-2": {"nombre": "VILLAHERMOSA 2", "unidades": [{"vehiculo": "JAC X12000", "serie": "3GAPJ1CA2TM029032", "placa": "YD0777B", "modelo": "2026", "numero_economico": "608"}, {"vehiculo": "NISSAN", "serie": "3N6AD35A1PK865880", "placa": "XR5218B", "modelo": "2023", "numero_economico": "326"}]}, "xalapa": {"nombre": "XALAPA", "unidades": [{"vehiculo": "CITY 4", "serie": "3JA1SBB27TK006942", "placa": "XT3292B", "modelo": "2026", "numero_economico": "407"}, {"vehiculo": "NISSAN", "serie": "3N6AD35AXPK883469", "placa": "XR2620B", "modelo": "2023", "numero_economico": "317"}]}};
+
+/* =========================================================
+   CONFIGURACIÓN — reemplazar con el webhook real de n8n
+   ========================================================= */
+const WEBHOOK_URL = "https://TU-INSTANCIA-N8N.app/webhook/confirmacion-flota";
+
+/* ========================================================= */
+
+function formatPlate(v){
+  return v.toUpperCase().replace(/[\s\-]+/g,'');
+}
+function formatDigitsOnly(v){
+  return v.replace(/[^0-9]/g,'');
+}
+function formatName(v){
+  return v.toUpperCase();
+}
+function attachAutoFormat(input, formatter){
+  input.addEventListener('input', e => {
+    const pos = e.target.selectionStart;
+    const before = e.target.value;
+    const after = formatter(before);
+    if (before !== after) {
+      e.target.value = after;
+      const diff = after.length - before.length;
+      e.target.setSelectionRange(pos + diff, pos + diff);
+    }
+  });
+}
+
+const VEHICLE_TYPES = ["NISSAN", "HYUNDAI", "RABÓN", "TORTON", "CITY 4", "CITY 5", "JAC X12000", "REMOLQUE"];
+
+/* Detecta unidades que comparten número de serie o número económico entre sucursales distintas */
+function computeConflicts(){
+  const bySerie = {}, byEco = {};
+  Object.entries(FLEET_DATA).forEach(([slug, branch]) => {
+    branch.unidades.forEach(u => {
+      if (u.serie) { (bySerie[u.serie] = bySerie[u.serie] || []).push({slug, nombre: branch.nombre}); }
+      if (u.numero_economico) { (byEco[u.numero_economico] = byEco[u.numero_economico] || []).push({slug, nombre: branch.nombre}); }
+    });
+  });
+  return {bySerie, byEco};
+}
+const CONFLICTS = computeConflicts();
+
+function getUnitConflicts(u, slug){
+  const others = new Set();
+  (CONFLICTS.bySerie[u.serie] || []).forEach(o => { if (o.slug !== slug) others.add(o.nombre); });
+  (CONFLICTS.byEco[u.numero_economico] || []).forEach(o => { if (o.slug !== slug) others.add(o.nombre); });
+  return [...others];
+}
+
+function getParam(name){
+  const url = new URL(window.location.href);
+  return url.searchParams.get(name);
+}
+
+function slugFromName(name){
+  return name.toLowerCase()
+    .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i').replace(/ó/g,'o').replace(/ú/g,'u').replace(/ñ/g,'n')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+}
+
+const app = document.getElementById('app');
+const sucursalSlug = getParam('sucursal');
+const branch = sucursalSlug ? FLEET_DATA[sucursalSlug] : null;
+
+if (!branch) {
+  renderBranchSelector();
+} else {
+  renderForm(branch, sucursalSlug);
+}
+
+function renderBranchSelector(){
+  const names = Object.keys(FLEET_DATA).sort();
+  app.innerHTML = `
+    <div class="wrap center-screen">
+      <div class="eyebrow">PYLSA · Confirmación de Flota 2026</div>
+      <h1>Selecciona tu sucursal</h1>
+      <p>Este formulario se comparte con un enlace individual por sucursal. Si llegaste aquí sin uno, elige tu sucursal de la lista para continuar.</p>
+      <div class="branch-list">
+        ${names.map(slug => `<a href="?sucursal=${slug}" data-slug="${slug}">${FLEET_DATA[slug].nombre} <span>${FLEET_DATA[slug].unidades.length} unidad(es)</span></a>`).join('')}
+      </div>
+    </div>
+  `;
+  document.querySelectorAll('.branch-list a').forEach(a => {
+    a.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      const slug = a.getAttribute('data-slug');
+      try { history.pushState({}, '', `?sucursal=${slug}`); } catch (e) { /* preview sandbox may block this, safe to ignore */ }
+      renderForm(FLEET_DATA[slug], slug);
+    });
+  });
+}
+
+function renderForm(branch, slug){
+  const units = branch.unidades;
+
+  app.innerHTML = `
+    <header>
+      <div class="wrap">
+        <div class="eyebrow">PYLSA · Confirmación de Flota 2026</div>
+        <h1>${branch.nombre}</h1>
+        <div class="subhead">Para cada unidad, confirma primero si está asignada a tu sucursal. Si la tienen, revisa si la placa y el número de serie siguen siendo correctos, anota el operador (o marca "Vacante") y sube una foto de su tarjeta de circulación. Si tienes una unidad que no aparece en esta lista, agrégala al final.</div>
+        <div class="progress-row">
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="progress-label" id="progressLabel">0 / ${units.length}</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <div class="units" id="unitsWrap"></div>
+
+      <div class="card gate-card" id="extraGateCard">
+        <div class="veh-name" style="margin-bottom:10px;">¿Tienes alguna otra unidad o remolque que no esté en esta lista?</div>
+        <div class="seg">
+          <button type="button" id="extraGateYes">Sí, tengo otra(s)</button>
+          <button type="button" id="extraGateNo">No, es todo</button>
+        </div>
+      </div>
+
+      <div class="units" id="extraUnitsWrap" style="display:none;"></div>
+      <div class="add-unit-zone" id="addUnitZone" style="display:none;">
+        <button type="button" class="add-unit-btn" id="addUnitBtn">+ Agregar otra unidad</button>
+      </div>
+    </div>
+
+    <div class="footer-bar">
+      <div class="footer-inner">
+        <div class="footer-status" id="footerStatus">Faltan ${units.length} unidad(es) por revisar</div>
+        <button class="submit-btn" id="submitBtn" disabled>Enviar confirmación</button>
+      </div>
+    </div>
+  `;
+
+  const unitsWrap = document.getElementById('unitsWrap');
+  const state = units.map(u => ({
+    ...u,
+    asignada: null,       // true | false
+    not_assigned_note: '',
+    plate_status: null,   // 'ok' | 'change'
+    new_plate: '',
+    serie_status: null,   // 'ok' | 'change'
+    new_serie: '',
+    operador_nombre: '',
+    operador_apellido1: '',
+    operador_apellido2: '',
+    vacante: false,
+    foto: null,
+    conflict: getUnitConflicts(u, slug),
+    reviewed: false
+  }));
+
+  units.forEach((u, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = `card-${i}`;
+    const conflicts = getUnitConflicts(u, slug);
+    const conflictBanner = conflicts.length
+      ? `<div class="conflict-banner">⚠ Esta unidad (serie o número económico) también aparece registrada en: <b>${conflicts.join(', ')}</b>. Puede ser un error de captura — confirma normalmente, tu respuesta se enviará para revisión antes de actualizar el registro.</div>`
+      : '';
+    card.innerHTML = `
+      <div class="card-top">
+        <div>
+          <div class="veh-name">${u.vehiculo}</div>
+          <div class="veh-modelo">Modelo ${u.modelo}</div>
+        </div>
+      </div>
+      <div class="row-line">NÚMERO ECONÓMICO&nbsp;<b>${u.numero_economico || '—'}</b></div>
+      <div class="row-line">SERIE&nbsp;<b>${u.serie || '—'}</b></div>
+      <div class="row-line">PLACA ACTUAL&nbsp;<b>${u.placa || '—'}</b></div>
+      ${conflictBanner}
+
+      <div class="field-group">
+        <div class="field-label">¿Esta unidad está asignada a tu sucursal?</div>
+        <div class="seg">
+          <button type="button" class="assigned-yes-btn" data-i="${i}">Sí, la tenemos</button>
+          <button type="button" class="assigned-no-btn" data-i="${i}">No la tenemos</button>
+        </div>
+        <div class="plate-input" id="notAssignedInput-${i}">
+          <input type="text" placeholder="¿Sabes dónde está o qué pasó con ella? (opcional)" id="notAssignedNote-${i}" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field-group" id="plateGroup-${i}" style="display:none;">
+        <div class="field-label">¿El número de placa sigue siendo el mismo?</div>
+        <div class="seg">
+          <button type="button" class="ok-btn" data-i="${i}">Sigue igual</button>
+          <button type="button" class="change-btn" data-i="${i}">Cambió</button>
+        </div>
+        <div class="plate-input" id="plateInput-${i}">
+          <input type="text" placeholder="Nueva placa" id="newPlate-${i}" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field-group" id="serieGroup-${i}" style="display:none;">
+        <div class="field-label">¿El número de serie es correcto?</div>
+        <div class="seg">
+          <button type="button" class="serie-ok-btn" data-i="${i}">Es correcto</button>
+          <button type="button" class="serie-change-btn" data-i="${i}">No es correcto</button>
+        </div>
+        <div class="plate-input" id="serieInput-${i}">
+          <input type="text" placeholder="Número de serie correcto" id="newSerie-${i}" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field-group" id="operadorGroup-${i}" style="display:none;">
+        <div class="field-label">Nombre del operador de la unidad</div>
+        <div class="name-fields">
+          <input type="text" placeholder="Nombre" id="operadorNombre-${i}" autocomplete="off">
+          <input type="text" placeholder="Primer apellido" id="operadorApellido1-${i}" autocomplete="off">
+          <input type="text" placeholder="Segundo apellido" id="operadorApellido2-${i}" autocomplete="off">
+        </div>
+        <button type="button" class="vacante-btn" id="vacanteBtn-${i}" data-i="${i}">Vacante</button>
+      </div>
+
+      <div class="field-group" id="photoGroup-${i}" style="display:none;">
+        <div class="field-label">Foto de la tarjeta de circulación</div>
+        <div class="photo-zone">
+          <div class="photo-placeholder" id="photoPlaceholder-${i}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 8h3l1.5-2h7L17 8h3v11H4V8z" stroke="#5E666C" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13.5" r="3" stroke="#5E666C" stroke-width="1.6"/></svg>
+          </div>
+          <img class="photo-thumb" id="photoThumb-${i}" alt="Vista previa de la tarjeta de circulación">
+          <button type="button" class="photo-btn" id="photoBtn-${i}">
+            <span id="photoBtnLabel-${i}">Tomar o subir foto</span>
+          </button>
+          <input type="file" id="photoInput-${i}" accept="image/*" capture="environment">
+        </div>
+      </div>
+    `;
+    unitsWrap.appendChild(card);
+  });
+
+  let extraGateAnswer = null; // null | true | false
+
+  function updateProgress(){
+    const done = state.filter(s => s.reviewed).length;
+    document.getElementById('progressFill').style.width = (done / units.length * 100) + '%';
+    document.getElementById('progressLabel').textContent = `${done} / ${units.length}`;
+
+    const allUnitsDone = done === units.length;
+    let statusMsg = '';
+    let gateOk = false;
+
+    if (!allUnitsDone) {
+      statusMsg = `Faltan ${units.length - done} unidad(es) por revisar`;
+    } else if (extraGateAnswer === null) {
+      statusMsg = 'Falta responder si hay otra unidad no listada';
+    } else if (extraGateAnswer === true) {
+      const validCount = (typeof extraUnits !== 'undefined' ? extraUnits : []).filter(x => x.vehiculo.trim() && x.placa.trim()).length;
+      if (validCount === 0) {
+        statusMsg = 'Agrega al menos una unidad, o responde "No, es todo"';
+      } else {
+        statusMsg = `Todo revisado — ${validCount} unidad(es) adicional(es) agregada(s)`;
+        gateOk = true;
+      }
+    } else {
+      statusMsg = 'Todas las unidades revisadas';
+      gateOk = true;
+    }
+
+    document.getElementById('footerStatus').textContent = statusMsg;
+    document.getElementById('submitBtn').disabled = !(allUnitsDone && gateOk);
+  }
+
+  function checkReviewed(i){
+    const s = state[i];
+    if (s.asignada === false) {
+      s.reviewed = true;
+    } else if (s.asignada === true) {
+      const hasName = s.operador_nombre.trim().length > 0 && s.operador_apellido1.trim().length > 0 && s.operador_apellido2.trim().length > 0;
+      s.reviewed = !!(s.plate_status && s.serie_status && (s.vacante || hasName) && s.foto);
+    } else {
+      s.reviewed = false;
+    }
+    const card = document.getElementById(`card-${i}`);
+    card.classList.toggle('is-ok', s.reviewed && s.asignada === true && !s.vacante);
+    card.classList.toggle('is-vacante', s.reviewed && s.asignada === true && s.vacante);
+    card.classList.toggle('is-gone', s.asignada === false);
+    updateProgress();
+  }
+
+  units.forEach((u, i) => {
+    const assignedYesBtn = unitsWrap.querySelector(`.assigned-yes-btn[data-i="${i}"]`);
+    const assignedNoBtn = unitsWrap.querySelector(`.assigned-no-btn[data-i="${i}"]`);
+    const notAssignedInputWrap = document.getElementById(`notAssignedInput-${i}`);
+    const notAssignedNoteInput = document.getElementById(`notAssignedNote-${i}`);
+    const plateGroup = document.getElementById(`plateGroup-${i}`);
+    const okBtn = unitsWrap.querySelector(`.ok-btn[data-i="${i}"]`);
+    const changeBtn = unitsWrap.querySelector(`.change-btn[data-i="${i}"]`);
+    const plateInputWrap = document.getElementById(`plateInput-${i}`);
+    const newPlateInput = document.getElementById(`newPlate-${i}`);
+    const serieGroup = document.getElementById(`serieGroup-${i}`);
+    const serieOkBtn = unitsWrap.querySelector(`.serie-ok-btn[data-i="${i}"]`);
+    const serieChangeBtn = unitsWrap.querySelector(`.serie-change-btn[data-i="${i}"]`);
+    const serieInputWrap = document.getElementById(`serieInput-${i}`);
+    const newSerieInput = document.getElementById(`newSerie-${i}`);
+    const operadorNombreInput = document.getElementById(`operadorNombre-${i}`);
+    const operadorApellido1Input = document.getElementById(`operadorApellido1-${i}`);
+    const operadorApellido2Input = document.getElementById(`operadorApellido2-${i}`);
+    const vacanteBtn = document.getElementById(`vacanteBtn-${i}`);
+    const operadorGroup = document.getElementById(`operadorGroup-${i}`);
+    const photoGroup = document.getElementById(`photoGroup-${i}`);
+
+    function setFieldsVisible(visible){
+      plateGroup.style.display = visible ? '' : 'none';
+      serieGroup.style.display = visible ? '' : 'none';
+      operadorGroup.style.display = visible ? '' : 'none';
+      photoGroup.style.display = visible ? '' : 'none';
+    }
+
+    assignedYesBtn.addEventListener('click', () => {
+      state[i].asignada = true;
+      assignedYesBtn.classList.add('active','ok'); assignedNoBtn.classList.remove('active','gone');
+      notAssignedInputWrap.classList.remove('show');
+      setFieldsVisible(true);
+      checkReviewed(i);
+    });
+    assignedNoBtn.addEventListener('click', () => {
+      state[i].asignada = false;
+      state[i].plate_status = null;
+      assignedNoBtn.classList.add('active','gone'); assignedYesBtn.classList.remove('active','ok');
+      notAssignedInputWrap.classList.add('show');
+      setFieldsVisible(false);
+      checkReviewed(i);
+    });
+    notAssignedNoteInput.addEventListener('input', e => { state[i].not_assigned_note = e.target.value; });
+
+    okBtn.addEventListener('click', () => {
+      state[i].plate_status = 'ok';
+      state[i].new_plate = '';
+      okBtn.classList.add('active','ok'); changeBtn.classList.remove('active','change');
+      plateInputWrap.classList.remove('show');
+      checkReviewed(i);
+    });
+    changeBtn.addEventListener('click', () => {
+      state[i].plate_status = 'change';
+      changeBtn.classList.add('active','change'); okBtn.classList.remove('active','ok');
+      plateInputWrap.classList.add('show');
+      newPlateInput.focus();
+      checkReviewed(i);
+    });
+    attachAutoFormat(newPlateInput, formatPlate);
+    newPlateInput.addEventListener('input', e => { state[i].new_plate = e.target.value; });
+
+    serieOkBtn.addEventListener('click', () => {
+      state[i].serie_status = 'ok';
+      state[i].new_serie = '';
+      serieOkBtn.classList.add('active','ok'); serieChangeBtn.classList.remove('active','change');
+      serieInputWrap.classList.remove('show');
+      checkReviewed(i);
+    });
+    serieChangeBtn.addEventListener('click', () => {
+      state[i].serie_status = 'change';
+      serieChangeBtn.classList.add('active','change'); serieOkBtn.classList.remove('active','ok');
+      serieInputWrap.classList.add('show');
+      newSerieInput.focus();
+      checkReviewed(i);
+    });
+    attachAutoFormat(newSerieInput, formatPlate);
+    newSerieInput.addEventListener('input', e => { state[i].new_serie = e.target.value; });
+
+    attachAutoFormat(operadorNombreInput, formatName);
+    operadorNombreInput.addEventListener('input', e => {
+      state[i].operador_nombre = e.target.value;
+      if (e.target.value.trim().length > 0 && state[i].vacante) {
+        state[i].vacante = false;
+        vacanteBtn.classList.remove('active');
+      }
+      checkReviewed(i);
+    });
+    attachAutoFormat(operadorApellido1Input, formatName);
+    operadorApellido1Input.addEventListener('input', e => {
+      state[i].operador_apellido1 = e.target.value;
+      checkReviewed(i);
+    });
+    attachAutoFormat(operadorApellido2Input, formatName);
+    operadorApellido2Input.addEventListener('input', e => {
+      state[i].operador_apellido2 = e.target.value;
+      checkReviewed(i);
+    });
+    vacanteBtn.addEventListener('click', () => {
+      state[i].vacante = !state[i].vacante;
+      vacanteBtn.classList.toggle('active', state[i].vacante);
+      const disable = state[i].vacante;
+      if (disable) {
+        state[i].operador_nombre = ''; operadorNombreInput.value = '';
+        state[i].operador_apellido1 = ''; operadorApellido1Input.value = '';
+        state[i].operador_apellido2 = ''; operadorApellido2Input.value = '';
+      }
+      operadorNombreInput.disabled = disable;
+      operadorApellido1Input.disabled = disable;
+      operadorApellido2Input.disabled = disable;
+      checkReviewed(i);
+    });
+
+    const photoBtn = document.getElementById(`photoBtn-${i}`);
+    const photoInput = document.getElementById(`photoInput-${i}`);
+    const photoThumb = document.getElementById(`photoThumb-${i}`);
+    const photoPlaceholder = document.getElementById(`photoPlaceholder-${i}`);
+    const photoBtnLabel = document.getElementById(`photoBtnLabel-${i}`);
+
+    photoBtn.addEventListener('click', () => photoInput.click());
+    photoInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      state[i].foto = file;
+      photoThumb.src = URL.createObjectURL(file);
+      photoThumb.classList.add('show');
+      photoPlaceholder.classList.add('hide');
+      photoBtn.classList.add('has-photo');
+      photoBtnLabel.innerHTML = `Foto lista — cambiar<span class="photo-filename">${file.name}</span>`;
+      checkReviewed(i);
+    });
+  });
+
+  document.getElementById('submitBtn').addEventListener('click', () => submitForm(branch.nombre, slug, state, extraUnits));
+
+  /* ---- Unidades no listadas ---- */
+  const extraUnitsWrap = document.getElementById('extraUnitsWrap');
+  const addUnitBtn = document.getElementById('addUnitBtn');
+  const addUnitZone = document.getElementById('addUnitZone');
+  const extraGateYes = document.getElementById('extraGateYes');
+  const extraGateNo = document.getElementById('extraGateNo');
+  const extraUnits = [];
+  let extraCounter = 0;
+
+  extraGateYes.addEventListener('click', () => {
+    extraGateAnswer = true;
+    extraGateYes.classList.add('active','ok'); extraGateNo.classList.remove('active','gone');
+    extraUnitsWrap.style.display = '';
+    addUnitZone.style.display = '';
+    if (extraUnits.length === 0) addUnitBtn.click();
+    updateProgress();
+  });
+  extraGateNo.addEventListener('click', () => {
+    extraGateAnswer = false;
+    extraGateNo.classList.add('active','gone'); extraGateYes.classList.remove('active','ok');
+    extraUnitsWrap.style.display = 'none';
+    addUnitZone.style.display = 'none';
+    updateProgress();
+  });
+
+  addUnitBtn.addEventListener('click', () => {
+    const id = extraCounter++;
+    extraUnits.push({ id, vehiculo:'', placa:'', serie:'', numero_economico:'', modelo:'', operador_nombre:'', operador_apellido1:'', operador_apellido2:'', vacante:false, foto:null });
+    const card = document.createElement('div');
+    card.className = 'card extra-card';
+    card.id = `extra-${id}`;
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="veh-name">Unidad no listada</div>
+        <button type="button" class="remove-extra-btn" id="removeExtra-${id}">✕</button>
+      </div>
+      <div class="field-row-2">
+        <div><div class="field-label">Vehículo / tipo</div>
+          <select id="extraVeh-${id}">
+            <option value="">Selecciona…</option>
+            ${VEHICLE_TYPES.map(v => `<option value="${v}">${v}</option>`).join('')}
+          </select>
+        </div>
+        <div><div class="field-label">Placa</div><input type="text" placeholder="Placa" id="extraPlaca-${id}"></div>
+      </div>
+      <div class="field-row-2" style="margin-top:8px;">
+        <div><div class="field-label">Número de serie</div><input type="text" placeholder="Número de serie" id="extraSerie-${id}"></div>
+        <div><div class="field-label">Número económico (si tiene)</div><input type="text" placeholder="Opcional" id="extraEco-${id}"></div>
+      </div>
+      <div class="field-row-2" style="margin-top:8px;">
+        <div><div class="field-label">Modelo</div><input type="text" inputmode="numeric" placeholder="Año" id="extraModelo-${id}"></div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Nombre del operador de la unidad</div>
+        <div class="name-fields">
+          <input type="text" placeholder="Nombre" id="extraOperadorNombre-${id}">
+          <input type="text" placeholder="Primer apellido" id="extraOperadorApellido1-${id}">
+          <input type="text" placeholder="Segundo apellido" id="extraOperadorApellido2-${id}">
+        </div>
+        <button type="button" class="vacante-btn" id="extraVacanteBtn-${id}">Vacante</button>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Foto de la tarjeta de circulación</div>
+        <div class="photo-zone">
+          <div class="photo-placeholder" id="extraPhotoPlaceholder-${id}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 8h3l1.5-2h7L17 8h3v11H4V8z" stroke="#5E666C" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13.5" r="3" stroke="#5E666C" stroke-width="1.6"/></svg>
+          </div>
+          <img class="photo-thumb" id="extraPhotoThumb-${id}" alt="Vista previa">
+          <button type="button" class="photo-btn" id="extraPhotoBtn-${id}"><span id="extraPhotoBtnLabel-${id}">Tomar o subir foto</span></button>
+          <input type="file" id="extraPhotoInput-${id}" accept="image/*" capture="environment">
+        </div>
+      </div>
+    `;
+    extraUnitsWrap.appendChild(card);
+
+    const item = extraUnits.find(x => x.id === id);
+    document.getElementById(`extraVeh-${id}`).addEventListener('change', e => { item.vehiculo = e.target.value; updateProgress(); });
+    attachAutoFormat(document.getElementById(`extraPlaca-${id}`), formatPlate);
+    document.getElementById(`extraPlaca-${id}`).addEventListener('input', e => { item.placa = e.target.value; updateProgress(); });
+    attachAutoFormat(document.getElementById(`extraSerie-${id}`), formatPlate);
+    document.getElementById(`extraSerie-${id}`).addEventListener('input', e => { item.serie = e.target.value; });
+    attachAutoFormat(document.getElementById(`extraEco-${id}`), formatPlate);
+    document.getElementById(`extraEco-${id}`).addEventListener('input', e => item.numero_economico = e.target.value);
+    attachAutoFormat(document.getElementById(`extraModelo-${id}`), formatDigitsOnly);
+    document.getElementById(`extraModelo-${id}`).addEventListener('input', e => item.modelo = e.target.value);
+    const opNombreInput = document.getElementById(`extraOperadorNombre-${id}`);
+    const opApellido1Input = document.getElementById(`extraOperadorApellido1-${id}`);
+    const opApellido2Input = document.getElementById(`extraOperadorApellido2-${id}`);
+    attachAutoFormat(opNombreInput, formatName);
+    attachAutoFormat(opApellido1Input, formatName);
+    attachAutoFormat(opApellido2Input, formatName);
+    const vacBtn = document.getElementById(`extraVacanteBtn-${id}`);
+    opNombreInput.addEventListener('input', e => {
+      item.operador_nombre = e.target.value;
+      if (e.target.value.trim().length > 0 && item.vacante) { item.vacante = false; vacBtn.classList.remove('active'); }
+    });
+    opApellido1Input.addEventListener('input', e => { item.operador_apellido1 = e.target.value; });
+    opApellido2Input.addEventListener('input', e => { item.operador_apellido2 = e.target.value; });
+    vacBtn.addEventListener('click', () => {
+      item.vacante = !item.vacante;
+      vacBtn.classList.toggle('active', item.vacante);
+      const disable = item.vacante;
+      opNombreInput.disabled = disable; opApellido1Input.disabled = disable; opApellido2Input.disabled = disable;
+      if (disable) {
+        item.operador_nombre = ''; opNombreInput.value = '';
+        item.operador_apellido1 = ''; opApellido1Input.value = '';
+        item.operador_apellido2 = ''; opApellido2Input.value = '';
+      }
+    });
+    const exPhotoBtn = document.getElementById(`extraPhotoBtn-${id}`);
+    const exPhotoInput = document.getElementById(`extraPhotoInput-${id}`);
+    exPhotoBtn.addEventListener('click', () => exPhotoInput.click());
+    exPhotoInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      item.foto = file;
+      document.getElementById(`extraPhotoThumb-${id}`).src = URL.createObjectURL(file);
+      document.getElementById(`extraPhotoThumb-${id}`).classList.add('show');
+      document.getElementById(`extraPhotoPlaceholder-${id}`).classList.add('hide');
+      document.getElementById(`extraPhotoBtnLabel-${id}`).textContent = 'Foto lista — cambiar';
+    });
+    document.getElementById(`removeExtra-${id}`).addEventListener('click', () => {
+      const idx = extraUnits.findIndex(x => x.id === id);
+      if (idx > -1) extraUnits.splice(idx, 1);
+      card.remove();
+      updateProgress();
+    });
+  });
+}
+
+async function submitForm(branchName, slug, state, extraUnits){
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+
+  const validExtras = (extraUnits || []).filter(x => x.vehiculo.trim() || x.placa.trim());
+
+  const payload = {
+    sucursal: branchName,
+    sucursal_slug: slug,
+    fecha_confirmacion: new Date().toISOString(),
+    unidades: state.map(s => ({
+      vehiculo: s.vehiculo,
+      numero_economico: s.numero_economico,
+      serie: s.serie,
+      placa_registrada: s.placa,
+      asignada_a_sucursal: s.asignada === true,
+      placa_confirmada: s.asignada === true && s.plate_status === 'ok',
+      placa_nueva: s.asignada === true && s.plate_status === 'change' ? s.new_plate.trim() : '',
+      serie_confirmada: s.asignada === true && s.serie_status === 'ok',
+      serie_nueva: s.asignada === true && s.serie_status === 'change' ? s.new_serie.trim() : '',
+      nota_no_asignada: s.asignada === false ? (s.not_assigned_note || '').trim() : '',
+      operador: (s.asignada !== true || s.vacante) ? '' : [s.operador_nombre.trim(), s.operador_apellido1.trim(), s.operador_apellido2.trim()].filter(Boolean).join(' '),
+      vacante: s.asignada === true ? s.vacante : false,
+      foto_campo: s.asignada === true ? `foto_${s.numero_economico}` : '',
+      conflicto_duplicado: s.conflict && s.conflict.length > 0,
+      conflicto_con: s.conflict || []
+    })),
+    unidades_no_listadas: validExtras.map(x => ({
+      vehiculo: x.vehiculo.trim(),
+      placa: x.placa.trim(),
+      serie: x.serie.trim(),
+      numero_economico: x.numero_economico.trim(),
+      modelo: x.modelo.trim(),
+      operador: x.vacante ? '' : [x.operador_nombre.trim(), x.operador_apellido1.trim(), x.operador_apellido2.trim()].filter(Boolean).join(' '),
+      vacante: x.vacante,
+      foto_campo: `foto_extra_${x.id}`
+    }))
+  };
+
+  const formData = new FormData();
+  formData.append('data', JSON.stringify(payload));
+  state.forEach(s => {
+    if (s.foto && s.asignada === true) {
+      const ext = (s.foto.name.split('.').pop() || 'jpg');
+      formData.append(`foto_${s.numero_economico}`, s.foto, `tarjeta_circulacion_${slug}_${s.numero_economico}.${ext}`);
+    }
+  });
+  validExtras.forEach(x => {
+    if (x.foto) {
+      const ext = (x.foto.name.split('.').pop() || 'jpg');
+      formData.append(`foto_extra_${x.id}`, x.foto, `tarjeta_circulacion_${slug}_extra_${x.id}.${ext}`);
+    }
+  });
+
+  try {
+    const res = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      body: formData
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    renderSuccess(branchName);
+  } catch (err) {
+    renderError(payload, err);
+  }
+}
+
+function renderSuccess(branchName){
+  document.querySelector('header')?.remove();
+  document.querySelector('.wrap:not(.center-screen)')?.remove();
+  document.querySelector('.footer-bar')?.remove();
+  app.innerHTML = `
+    <div class="wrap center-screen">
+      <div class="ok-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="#4FA6A0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h1>Confirmación enviada</h1>
+      <p>Gracias. Se registró la confirmación del parque vehicular de <b>${branchName}</b>.</p>
+    </div>
+  `;
+}
+
+function renderError(payload, err){
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = false;
+  btn.textContent = 'Enviar confirmación';
+  const status = document.getElementById('footerStatus');
+  status.innerHTML = `No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.`;
+
+  const existing = document.getElementById('errBanner');
+  if (existing) existing.remove();
+
+  const banner = document.createElement('div');
+  banner.id = 'errBanner';
+  banner.className = 'err-banner';
+  banner.innerHTML = `No se pudo conectar con el servidor (${err.message}). Tus respuestas y fotos siguen aquí — no se perdieron. Pulsa "Enviar confirmación" de nuevo cuando tengas conexión, o <button class="link-btn" id="downloadJson">descarga los datos (sin fotos)</button> como respaldo.`;
+  document.querySelector('.footer-inner').before(banner);
+  document.getElementById('downloadJson').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `confirmacion_${payload.sucursal_slug}.json`;
+    a.click();
+  });
+}
+</script>
+</body>
+</html>
