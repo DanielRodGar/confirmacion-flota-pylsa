@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -657,12 +656,24 @@ async function submitForm(branch, slug, state){
  
   try {
     const res = await fetch(WEBHOOK_URL, { method: 'POST', body: fd });
+    if (res.status === 409) { renderYaRegistrada(branch.nombre); return; }
     if (!res.ok) throw new Error('HTTP ' + res.status);
     renderSuccess(branch.nombre, unidades);
   } catch (err) {
     btn.disabled = false; btn.textContent = 'Enviar tarjetas';
     document.getElementById('errSlot').innerHTML = `<div class="err-banner">No se pudo conectar con el servidor (${esc(err.message)}). Tus datos y fotos siguen aquí: revisa tu conexión y vuelve a pulsar <b>Enviar tarjetas</b>.</div>`;
   }
+}
+ 
+function renderYaRegistrada(nombre){
+  app.innerHTML = `
+    <div class="wrap center-screen">
+      <div class="ok-icon" style="background:var(--accent-amber-dim);border-color:var(--accent-amber)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 7v6M12 17h.01" stroke="#E8A93B" stroke-width="2.6" stroke-linecap="round"/></svg></div>
+      <h1>Ya registrada</h1>
+      <p>La sucursal <b>${esc(nombre)}</b> ya envió sus tarjetas de combustible. El formulario solo se puede llenar una vez.</p>
+      <p>Si necesitas corregir algo, comunícate con Dirección Regional.</p>
+    </div>`;
+  window.scrollTo(0,0);
 }
  
 function renderSuccess(nombre, us){
@@ -682,4 +693,3 @@ function renderSuccess(nombre, us){
 </script>
 </body>
 </html>
- 
