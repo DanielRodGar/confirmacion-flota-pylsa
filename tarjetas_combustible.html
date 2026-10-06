@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tarjetas de Combustible · PYLSA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-base:#1B2024; --bg-panel:#232A2F; --bg-panel-2:#2B3239; --bg-raised:#323A41;
+    --accent-amber:#E8A93B; --accent-amber-dim:#4A3B22;
+    --accent-teal:#4FA6A0; --accent-teal-dim:#1F3735;
+    --accent-red:#D9614F; --accent-red-dim:#3E2420;
+    --text-primary:#ECEEEA; --text-muted:#97A0A6; --text-faint:#5E666C;
+    --border:#3A4249; --border-light:#454E56;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:120px;}
+  .wrap{max-width:720px;margin:0 auto;padding:0 18px;}
+
+  header{background:linear-gradient(180deg,#20262B 0%,#1B2024 100%);border-bottom:1px solid var(--border);padding:28px 0 22px;position:relative;overflow:hidden;}
+  header::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:repeating-linear-gradient(135deg,var(--accent-amber) 0 14px,#1B2024 14px 28px);opacity:.55;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);margin-bottom:10px;}
+  .eyebrow button{background:none;border:none;color:var(--accent-teal);font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer;padding:0;text-decoration:underline;}
+  h1{font-family:'Oswald',sans-serif;font-weight:700;font-size:clamp(28px,7vw,40px);letter-spacing:.01em;text-transform:uppercase;margin:0 0 6px;line-height:1.02;}
+  .subhead{color:var(--text-muted);font-size:14.5px;line-height:1.5;max-width:56ch;}
+  .warn{margin-top:12px;font-size:13px;line-height:1.5;color:var(--accent-amber);background:var(--accent-amber-dim);border:1px solid var(--accent-amber);border-radius:7px;padding:9px 12px;}
+  .progress-row{display:flex;align-items:center;gap:12px;margin-top:20px;}
+  .progress-track{flex:1;height:6px;border-radius:3px;background:var(--bg-panel-2);overflow:hidden;border:1px solid var(--border);}
+  .progress-fill{height:100%;background:var(--accent-teal);width:0%;transition:width .25s ease;}
+  .progress-label{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text-muted);white-space:nowrap;}
+
+  .section-title{font-family:'Oswald',sans-serif;font-weight:600;font-size:18px;text-transform:uppercase;letter-spacing:.02em;margin:26px 0 4px;}
+  .section-note{color:var(--text-muted);font-size:13px;margin:0 0 12px;}
+  .units{padding:10px 0 8px;display:flex;flex-direction:column;gap:14px;}
+  .card{background:var(--bg-panel);border:1px solid var(--border);border-radius:10px;padding:16px 16px 18px;transition:border-color .2s ease,background .2s ease;}
+  .card.is-ok{border-color:var(--accent-teal);background:linear-gradient(180deg,var(--bg-panel) 0%,var(--accent-teal-dim) 340%);}
+  .card.is-vacante{border-color:var(--accent-amber);}
+  .card.is-error{border-color:var(--accent-red);}
+  .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px;}
+  .veh-name{font-family:'Oswald',sans-serif;font-weight:600;font-size:19px;text-transform:uppercase;letter-spacing:.01em;}
+  .veh-modelo{color:var(--text-muted);font-size:12.5px;font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+  .tag{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:#D8DCDD;background:linear-gradient(180deg,#3D454C,#2A3136);border:1px solid #4B545C;border-radius:5px;padding:5px 9px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),inset 0 -1px 2px rgba(0,0,0,.35),0 1px 0 rgba(0,0,0,.3);position:relative;white-space:nowrap;}
+  .tag::before,.tag::after{content:"";position:absolute;top:50%;width:3px;height:3px;border-radius:50%;background:#1B2024;box-shadow:inset 0 1px 1px rgba(0,0,0,.6);transform:translateY(-50%);}
+  .tag::before{left:4px;} .tag::after{right:4px;}
+  .tag span{padding:0 6px;}
+  .eco-big{font-family:'Oswald',sans-serif;font-weight:700;font-size:44px;line-height:1;color:var(--accent-amber);margin-top:6px;letter-spacing:.02em;}
+  .eco-big small{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:4px;}
+  .steps{margin:24px 0 0;padding:0;list-style:none;counter-reset:paso;display:flex;flex-direction:column;gap:12px;}
+  .steps li{counter-increment:paso;position:relative;background:var(--bg-panel);border:1px solid var(--border);border-radius:10px;padding:14px 16px 14px 56px;font-size:15px;line-height:1.55;color:var(--text-muted);}
+  .steps li b{color:var(--text-primary);}
+  .steps li::before{content:counter(paso);position:absolute;left:16px;top:13px;width:26px;height:26px;border-radius:50%;background:var(--accent-amber);color:#2A1D08;font-family:'Oswald',sans-serif;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;}
+  .alert{margin-top:18px;background:var(--accent-red-dim);border:2px solid var(--accent-red);border-radius:10px;padding:16px;font-size:15.5px;line-height:1.55;color:#F3D4CE;}
+  .alert b{color:#fff;}
+  .alert-title{font-family:'Oswald',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;color:var(--accent-red);margin-bottom:6px;letter-spacing:.02em;}
+  .agree{display:flex;gap:12px;align-items:flex-start;margin:22px 0 16px;font-size:15px;line-height:1.5;cursor:pointer;}
+  .agree input{width:24px;height:24px;flex-shrink:0;accent-color:var(--accent-teal);margin-top:1px;}
+  .agree-btn{width:100%;padding:16px;font-size:18px;margin-bottom:30px;}
+  .ex-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:14px;align-items:start;}
+  .ex-grid figure{margin:0;}
+  .ex-img svg{width:100%;height:auto;display:block;}
+  .ex-img.ex-v svg{max-width:190px;margin:0 auto;}
+  .ex-grid figcaption{font-size:13.5px;line-height:1.45;margin-top:8px;color:var(--text-muted);}
+  .ctype-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .ctype{display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--bg-panel-2);border:2px solid var(--border-light);border-radius:9px;padding:10px;cursor:pointer;color:var(--text-muted);font-family:'Inter',sans-serif;}
+  .ctype-img{display:flex;align-items:center;justify-content:center;height:84px;}
+  .ctype-img svg{height:84px;width:auto;}
+  .ctype-txt{display:flex;flex-direction:column;align-items:center;font-size:13px;line-height:1.3;}
+  .ctype-txt b{color:var(--text-primary);font-size:14px;}
+  .ctype-txt small{font-size:11.5px;color:var(--text-faint);}
+  .ctype.active{border-color:var(--accent-teal);background:var(--accent-teal-dim);}
+  .ctype.active .ctype-txt b{color:var(--accent-teal);}
+  @media (max-width:520px){.ex-grid{grid-template-columns:1fr;}}
+  .row-line{display:flex;gap:8px;font-size:13px;color:var(--text-muted);margin-bottom:4px;font-family:'IBM Plex Mono',monospace;}
+  .row-line b{color:var(--text-primary);font-weight:600;}
+  .row-line b.pend{color:var(--accent-amber);}
+
+  .field-group{margin-top:14px;}
+  .field-label{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);margin-bottom:7px;font-weight:600;}
+  .seg{display:flex;border:1px solid var(--border-light);border-radius:7px;overflow:hidden;}
+  .seg button{flex:1;background:var(--bg-panel-2);color:var(--text-muted);border:none;padding:9px 8px;font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:background .15s,color .15s;}
+  .seg button + button{border-left:1px solid var(--border-light);}
+  .seg button.active.ok{background:var(--accent-teal);color:#0F1E1C;}
+  .seg button.active.change{background:var(--accent-amber);color:#2A1D08;}
+  .reveal{display:none;} .reveal.show{display:block;}
+
+  input[type="text"],select,textarea{width:100%;background:var(--bg-panel-2);border:1px solid var(--border-light);border-radius:7px;padding:10px 12px;color:var(--text-primary);font-family:'IBM Plex Mono',monospace;font-size:14px;letter-spacing:.03em;}
+  select{font-family:'Inter',sans-serif;}
+  textarea{font-family:'Inter',sans-serif;letter-spacing:0;min-height:60px;resize:vertical;}
+  input::placeholder,textarea::placeholder{color:var(--text-faint);font-family:'Inter',sans-serif;}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent-teal);outline-offset:0;border-color:var(--accent-teal);}
+  input.card-num{font-size:18px;letter-spacing:.12em;}
+  input.bad{border-color:var(--accent-red);}
+  .hint{font-size:12px;color:var(--text-faint);margin-top:5px;font-family:'IBM Plex Mono',monospace;}
+  .hint.err{color:var(--accent-red);}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+  .photo-row{display:flex;align-items:center;gap:12px;margin-top:10px;}
+  .photo-btn{font-family:'Inter',sans-serif;font-weight:600;font-size:13px;background:var(--bg-panel-2);color:var(--text-muted);border:1px dashed var(--border-light);border-radius:7px;padding:10px 14px;cursor:pointer;}
+  .photo-btn.has{border-style:solid;border-color:var(--accent-teal);color:var(--accent-teal);}
+  .photo-row input[type=file]{display:none;}
+  .thumb{width:70px;height:44px;object-fit:cover;border-radius:5px;border:1px solid var(--border-light);display:none;}
+  .thumb.show{display:block;}
+
+  .add-btn{width:100%;background:transparent;border:1px dashed var(--border-light);color:var(--text-muted);border-radius:10px;padding:14px;font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer;}
+  .add-btn:hover{border-color:var(--accent-teal);color:var(--accent-teal);}
+  .remove-btn{background:none;border:none;color:var(--accent-red);font-family:'Inter',sans-serif;font-weight:600;font-size:12.5px;cursor:pointer;padding:4px;}
+
+  .footer-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(27,32,36,.92);backdrop-filter:blur(6px);border-top:1px solid var(--border);padding:14px 18px calc(14px + env(safe-area-inset-bottom));}
+  .footer-inner{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:14px;}
+  .footer-status{font-size:12.5px;color:var(--text-muted);flex:1;font-family:'IBM Plex Mono',monospace;}
+  .submit-btn{background:var(--accent-teal);color:#0F1E1C;border:none;border-radius:8px;font-family:'Oswald',sans-serif;font-weight:600;font-size:15px;letter-spacing:.02em;text-transform:uppercase;padding:13px 22px;cursor:pointer;transition:opacity .15s,transform .1s;}
+  .submit-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .submit-btn:not(:disabled):active{transform:scale(.98);}
+
+  .center-screen{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px;}
+  .center-screen h1{font-size:28px;}
+  .center-screen p{color:var(--text-muted);max-width:44ch;margin:10px 0 26px;line-height:1.6;}
+  .branch-list{display:flex;flex-direction:column;gap:8px;width:100%;max-width:420px;}
+  .branch-list a{display:flex;justify-content:space-between;align-items:center;background:var(--bg-panel);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text-primary);text-decoration:none;font-size:14px;font-weight:600;cursor:pointer;}
+  .branch-list a:hover{border-color:var(--accent-teal);}
+  .branch-list a span{color:var(--text-faint);font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:12px;}
+  .ok-icon{width:64px;height:64px;border-radius:50%;background:var(--accent-teal-dim);border:2px solid var(--accent-teal);display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
+  .summary{width:100%;max-width:380px;background:var(--bg-panel);border:1px solid var(--border);border-radius:10px;padding:4px 16px;text-align:left;}
+  .summary div{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--text-muted);}
+  .summary div:last-child{border:none;}
+  .summary b{color:var(--text-primary);font-family:'IBM Plex Mono',monospace;}
+  .err-banner{background:var(--accent-amber-dim);border:1px solid var(--accent-amber);color:var(--accent-amber);border-radius:8px;padding:12px 14px;font-size:13px;margin-bottom:12px;text-align:left;line-height:1.5;max-width:720px;margin-left:auto;margin-right:auto;}
+  @media (max-width:440px){.two{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* =========================================================
+   DATOS — Parque vehicular por sucursal, corte 1 oct 2026, sin remolques
+   ========================================================= */
+const FLEET_DATA = {"acayucan": {"nombre": "ACAYUCAN", "unidades": [{"eco": "363", "tipo": "HYUNDAI", "placa": "XY6954B"}, {"eco": "314", "tipo": "NISSAN", "placa": "XR5288B"}]}, "acerofertas": {"nombre": "ACEROFERTAS", "unidades": [{"eco": "307", "tipo": "NISSAN", "placa": "XR5201B"}]}, "cancun": {"nombre": "CANCÚN", "unidades": [{"eco": "410", "tipo": "CITY 4", "placa": "XT8614B"}, {"eco": "334", "tipo": "NISSAN", "placa": "XN8758B"}, {"eco": "160", "tipo": "RABÓN", "placa": "XK0510B"}]}, "cardel": {"nombre": "CARDEL", "unidades": [{"eco": "367", "tipo": "HYUNDAI", "placa": "XG6891A"}, {"eco": "324", "tipo": "NISSAN", "placa": "XR5248B"}]}, "cardenas": {"nombre": "CÁRDENAS", "unidades": [{"eco": "352", "tipo": "HYUNDAI", "placa": "XY6951B"}, {"eco": "313", "tipo": "NISSAN", "placa": "XR5219B"}]}, "centro": {"nombre": "CENTRO", "unidades": [{"eco": "366", "tipo": "HYUNDAI", "placa": "XG1295A"}, {"eco": "323", "tipo": "NISSAN", "placa": "XR5202B"}, {"eco": "510", "tipo": "CITY 5", "placa": "YB2109B"}]}, "coatzacoalcos-1": {"nombre": "COATZACOALCOS 1", "unidades": [{"eco": "405", "tipo": "CITY 4", "placa": "XS5197B"}, {"eco": "325", "tipo": "NISSAN", "placa": "XR5244B"}, {"eco": "158", "tipo": "RABÓN", "placa": "XG7042A"}]}, "coatzacoalcos-2": {"nombre": "COATZACOALCOS 2", "unidades": [{"eco": "508", "tipo": "CITY 5", "placa": "YB2263B"}, {"eco": "602", "tipo": "JAC X12000", "placa": "YD0545B"}]}, "comalcalco": {"nombre": "COMALCALCO", "unidades": [{"eco": "404", "tipo": "CITY 4", "placa": "XS5198B"}, {"eco": "603", "tipo": "JAC X12000", "placa": "YD0053B"}, {"eco": "330", "tipo": "NISSAN", "placa": "XR5241B"}]}, "cordoba-1": {"nombre": "CÓRDOBA 1", "unidades": [{"eco": "353", "tipo": "HYUNDAI", "placa": "XY6929B"}, {"eco": "318", "tipo": "NISSAN", "placa": "XR2737B"}, {"eco": "282", "tipo": "TORTON", "placa": "YD0982A"}]}, "cordoba-2": {"nombre": "CÓRDOBA 2", "unidades": [{"eco": "331", "tipo": "NISSAN", "placa": "XR2619B"}]}, "cosamaloapan": {"nombre": "COSAMALOAPAN", "unidades": [{"eco": "306", "tipo": "NISSAN", "placa": "XR2735B"}]}, "golfo": {"nombre": "GOLFO", "unidades": [{"eco": "315", "tipo": "NISSAN", "placa": "XR5206B"}]}, "matriz": {"nombre": "MATRIZ", "unidades": [{"eco": "501", "tipo": "CITY 5", "placa": "XU4555B"}, {"eco": "502", "tipo": "CITY 5", "placa": "YB2307B"}, {"eco": "605", "tipo": "JAC X12000", "placa": "YD0794B"}, {"eco": "289", "tipo": "TORTON", "placa": "XJ5992A"}, {"eco": "287", "tipo": "TORTON", "placa": "YD0983A"}, {"eco": "288", "tipo": "TORTON", "placa": "YD0981A"}, {"eco": "280", "tipo": "TORTON", "placa": "YD1204A"}, {"eco": "183", "tipo": "TORTON", "placa": "XG7023A"}, {"eco": "285", "tipo": "TORTON", "placa": "XK0509B"}, {"eco": "188", "tipo": "TORTON", "placa": "XG7025A"}]}, "merida-1": {"nombre": "MÉRIDA 1", "unidades": [{"eco": "406", "tipo": "CITY 4", "placa": "XT3295B"}, {"eco": "335", "tipo": "NISSAN", "placa": "XR5287B"}, {"eco": "162", "tipo": "RABÓN", "placa": "XH1539A"}, {"eco": "286", "tipo": "TORTON", "placa": "XF6465B"}], "especiales": [{"tipo": "MONTACARGAS"}, {"tipo": "AUTO UTILITARIO", "modelo": "CHEVROLET AVEO"}]}, "merida-2": {"nombre": "MÉRIDA 2", "unidades": [{"eco": "408", "tipo": "CITY 4", "placa": "XT8741B"}, {"eco": "333", "tipo": "NISSAN", "placa": "XR2738B"}]}, "merida-3": {"nombre": "MÉRIDA 3", "unidades": [{"eco": "338", "tipo": "NISSAN", "placa": "XR5247B"}]}, "merida-4": {"nombre": "MÉRIDA 4", "unidades": [{"eco": "337", "tipo": "NISSAN", "placa": "XR5246B"}]}, "minatitlan": {"nombre": "MINATITLÁN", "unidades": [{"eco": "371", "tipo": "HYUNDAI", "placa": "XG6893A"}, {"eco": "305", "tipo": "NISSAN", "placa": "XR4734B"}]}, "orizaba-1": {"nombre": "ORIZABA 1", "unidades": [{"eco": "503", "tipo": "CITY 5", "placa": "YB2262B"}, {"eco": "606", "tipo": "JAC X12000", "placa": "YD0790B"}, {"eco": "332", "tipo": "NISSAN", "placa": "XR2734B"}]}, "orizaba-2": {"nombre": "ORIZABA 2", "unidades": [{"eco": "316", "tipo": "NISSAN", "placa": "XR5245B"}]}, "playa-del-carmen": {"nombre": "PLAYA DEL CARMEN", "unidades": [{"eco": "409", "tipo": "CITY 4", "placa": "XT8615B"}]}, "poza-rica": {"nombre": "POZA RICA", "unidades": [{"eco": "401", "tipo": "CITY 4", "placa": "XS5222B"}, {"eco": "312", "tipo": "NISSAN", "placa": "XR5250B"}]}, "puebla": {"nombre": "PUEBLA", "unidades": [{"eco": "379", "tipo": "HYUNDAI", "placa": "XY6953B"}, {"eco": "301", "tipo": "NISSAN", "placa": "XR5220B"}, {"eco": "161", "tipo": "RABÓN", "placa": "XH3686A"}], "especiales": [{"tipo": "MONTACARGAS"}]}, "san-andres-1": {"nombre": "SAN ANDRÉS 1", "unidades": [{"eco": "319", "tipo": "NISSAN", "placa": "XR2736B"}]}, "san-andres-2": {"nombre": "SAN ANDRÉS 2", "unidades": [{"eco": "402", "tipo": "CITY 4", "placa": "XS5221B"}, {"eco": "601", "tipo": "JAC X12000", "placa": "XU4557B"}, {"eco": "320", "tipo": "NISSAN", "placa": "XR4735B"}]}, "sur": {"nombre": "SUR", "unidades": [{"eco": "304", "tipo": "NISSAN", "placa": "XR5242B"}, {"eco": "511", "tipo": "CITY 5", "placa": "XY6955B"}]}, "tejeria": {"nombre": "TEJERÍA", "unidades": [{"eco": "380", "tipo": "HYUNDAI", "placa": "XY6952B"}, {"eco": "311", "tipo": "NISSAN", "placa": "XR5207B"}]}, "tierra-blanca": {"nombre": "TIERRA BLANCA", "unidades": [{"eco": "504", "tipo": "CITY 5", "placa": "YB2306B"}, {"eco": "321", "tipo": "NISSAN", "placa": "XR2740B"}]}, "tuxtepec-1": {"nombre": "TUXTEPEC 1", "unidades": [{"eco": "322", "tipo": "NISSAN", "placa": "XR2673B"}, {"eco": "505", "tipo": "CITY 5", "placa": "YB2284B"}]}, "tuxtepec-2": {"nombre": "TUXTEPEC 2", "unidades": [{"eco": "339", "tipo": "NISSAN", "placa": "XR5290B"}, {"eco": "609", "tipo": "JAC X12000", "placa": "YD0664B"}], "especiales": [{"tipo": "MONTACARGAS"}]}, "tuxtla-gtz-1": {"nombre": "TUXTLA GTZ 1", "unidades": [{"eco": "328", "tipo": "NISSAN", "placa": "XR5283B"}]}, "tuxtla-gtz-2": {"nombre": "TUXTLA GTZ 2", "unidades": [{"eco": "327", "tipo": "NISSAN", "placa": "XR5284B"}]}, "tuxtla-gtz-3": {"nombre": "TUXTLA GTZ 3", "unidades": [{"eco": "403", "tipo": "CITY 4", "placa": "XS5199B"}, {"eco": "604", "tipo": "JAC X12000", "placa": "YD0754B"}, {"eco": "329", "tipo": "NISSAN", "placa": "XR2739B"}]}, "villahermosa-1": {"nombre": "VILLAHERMOSA 1", "unidades": [{"eco": "506", "tipo": "CITY 5", "placa": "YB2264B"}, {"eco": "310", "tipo": "NISSAN", "placa": "XR5243B"}]}, "villahermosa-2": {"nombre": "VILLAHERMOSA 2", "unidades": [{"eco": "608", "tipo": "JAC X12000", "placa": "YD0777B"}, {"eco": "326", "tipo": "NISSAN", "placa": "XR5218B"}]}, "xalapa": {"nombre": "XALAPA", "unidades": [{"eco": "407", "tipo": "CITY 4", "placa": "XT3292B"}, {"eco": "317", "tipo": "NISSAN", "placa": "XR2620B"}]}};
+
+/* =========================================================
+   CONFIGURACIÓN — webhook de n8n
+   ========================================================= */
+const WEBHOOK_URL = "https://danielrodriguez.app.n8n.cloud/webhook/tarjetas-combustible";
+const TIPOS = ["NISSAN","HYUNDAI","CITY 4","CITY 5","JAC X12000","RABÓN","TORTON","MONTACARGAS","AUTO UTILITARIO","OTRO"];
+// Tipos que pueden no tener número económico ni placa
+const SIN_ECO = ["MONTACARGAS","AUTO UTILITARIO"];
+// Los montacargas no tienen económico ni placa: se identifican por marca y número de serie
+const ES_MC = t => t === 'MONTACARGAS';
+/* ========================================================= */
+
+const app = document.getElementById('app');
+const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// El número puede llevar letras y números (No. Fleet); se guarda sin espacios y en mayúsculas
+const digits = v => (v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+const fmtCard = v => digits(v).slice(0,16).replace(/(.{4})(?=.)/g, '$1 ');
+
+/* ---------- DIBUJOS DE LOS DOS TIPOS DE TARJETA (números ficticios) ---------- */
+const OK = '#2E9E8F', NO = '#D9614F';
+function bars(x, y, w, h){
+  let out = '', cx = x, i = 0;
+  const pat = [2,1,1,3,1,2,2,1,3,1,1,2,1,1,2,3,1,2,1,1];
+  while (cx < x + w){ const bw = pat[i % pat.length]; if (i % 2 === 0) out += `<rect x="${cx}" y="${y}" width="${bw}" height="${h}" fill="#111"/>`; cx += bw + 1; i++; }
+  return out;
+}
+function qr(x, y, s){
+  const c = s / 7;
+  const finder = (fx, fy) => `<rect x="${fx}" y="${fy}" width="${c*2}" height="${c*2}" fill="none" stroke="#111" stroke-width="${c*0.45}"/><rect x="${fx+c*0.65}" y="${fy+c*0.65}" width="${c*0.7}" height="${c*0.7}" fill="#111"/>`;
+  let dots = '';
+  [[3,0],[3,2],[4,1],[0,3],[2,3],[3,3],[5,3],[6,4],[3,4],[4,5],[3,6],[5,5],[6,6],[4,3],[2,4]].forEach(([a,b]) => dots += `<rect x="${x+a*c}" y="${y+b*c}" width="${c}" height="${c}" fill="#111"/>`);
+  return finder(x, y) + finder(x + c*5, y) + finder(x, y + c*5) + dots;
+}
+const badge = (x, y, ok) => `<g transform="translate(${x},${y})"><circle r="11" fill="${ok ? OK : NO}"/><path d="${ok ? 'M-5 0 L-1.5 4 L5.5 -4' : 'M-4 -4 L4 4 M4 -4 L-4 4'}" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`;
+
+function svgDriveTag(marks){
+  const dim = marks ? ' opacity="0.45"' : '';
+  return `<svg viewBox="0 0 330 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tarjeta DriveTAG">
+    <rect x="1" y="1" width="328" height="228" rx="14" fill="#F4F4F2" stroke="#BBB"/>
+    <circle cx="58" cy="38" r="22" fill="#E2231A"/><text x="58" y="42" font-size="10.5" font-family="Arial" font-weight="700" fill="#fff" text-anchor="middle">Edenred</text>
+    <text x="300" y="42" font-size="13" font-family="Arial" font-weight="700" fill="#C9A227" text-anchor="end">TELEVÍA</text>
+    <rect x="18" y="108" width="92" height="18" rx="9" fill="#111"/><text x="64" y="121" font-size="11" font-family="Arial" font-weight="700" fill="#fff" text-anchor="middle">DriveTAG</text>
+    ${qr(30, 142, 62)}
+    <g${dim}><rect x="124" y="84" width="190" height="50" rx="7" fill="none" stroke="#111"/><text x="132" y="93" font-size="7" font-family="Arial" fill="#111">Combustible</text>${bars(150, 96, 140, 18)}<text x="219" y="127" font-size="11" font-family="Arial" fill="#111" text-anchor="middle">000 000000000 000</text></g>
+    <rect x="124" y="141" width="190" height="28" rx="7" fill="${marks ? '#E3F5F2' : 'none'}" stroke="${marks ? OK : '#111'}" stroke-width="${marks ? 3 : 1}"/>
+    <text x="132" y="150" font-size="7" font-family="Arial" fill="#111">No. Fleet</text>
+    <text x="219" y="163" font-size="13" font-family="Arial" font-weight="700" fill="#111" text-anchor="middle">1234 5678 9012 3456</text>
+    <g${dim}><rect x="124" y="176" width="190" height="42" rx="7" fill="none" stroke="#111"/><text x="132" y="185" font-size="7" font-family="Arial" fill="#111">Peaje</text>${bars(160, 188, 120, 14)}<text x="219" y="213" font-size="11" font-family="Arial" fill="#111" text-anchor="middle">ABCD00000000 0</text></g>
+    ${marks ? badge(314, 141, true) + badge(314, 84, false) + badge(314, 176, false) : ''}
+  </svg>`;
+}
+function svgTicketCar(marks){
+  const dim = marks ? ' opacity="0.45"' : '';
+  return `<svg viewBox="0 0 200 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tarjeta Ticket Car">
+    <rect x="1" y="1" width="198" height="288" rx="14" fill="#F4F4F2" stroke="#BBB"/>
+    <rect x="12" y="66" width="176" height="30" rx="6" fill="${marks ? '#E3F5F2' : 'none'}" stroke="${marks ? OK : 'none'}" stroke-width="3"/>
+    <text x="100" y="87" font-size="15" font-family="Arial" font-weight="700" fill="#111" text-anchor="middle">1234 5678 9012 3456</text>
+    ${qr(18, 118, 64)}
+    <text x="92" y="135" font-size="8" font-family="Arial" font-weight="700" fill="#111">Edenred México</text>
+    <text x="92" y="146" font-size="8" font-family="Arial" font-weight="700" fill="#111">Ticket Car Edenred</text>
+    <g${dim}>${bars(22, 210, 156, 26)}<text x="100" y="252" font-size="12" font-family="Arial" fill="#111" text-anchor="middle">000 000000000 000</text></g>
+    ${marks ? badge(186, 66, true) + badge(186, 214, false) : ''}
+  </svg>`;
+}
+const TIPOS_TARJETA = {
+  DRIVETAG:   { nombre: 'DriveTAG', desc: 'Horizontal, con 3 recuadros', svg: svgDriveTag,
+                label: 'Número del recuadro "No. Fleet" (16 caracteres)',
+                ayuda: 'Copia el número del recuadro No. Fleet. No uses el de Combustible ni el de Peaje.',
+                inputmode: 'text' },
+  TICKETCAR:  { nombre: 'Ticket Car', desc: 'Vertical, número arriba', svg: svgTicketCar,
+                label: 'Número de la parte de arriba (16 dígitos)',
+                ayuda: 'Copia el número grande de arriba. No uses el que está debajo del código de barras.',
+                inputmode: 'numeric' }
+};
+
+
+function getParam(name){
+  try { return new URL(window.location.href).searchParams.get(name); } catch(e){ return null; }
+}
+
+const initialSlug = (getParam('sucursal') || '').toLowerCase();
+let aceptacion = null;   // fecha y hora en que la sucursal pulsó "De acuerdo"
+
+function start(){
+  if (FLEET_DATA[initialSlug]) renderForm(FLEET_DATA[initialSlug], initialSlug);
+  else renderBranchSelector();
+}
+renderInstructions();
+
+/* ---------- INSTRUCCIONES (obligatorias antes de empezar) ---------- */
+function renderInstructions(){
+  const b = FLEET_DATA[initialSlug];
+  app.innerHTML = `
+    <header>
+      <div class="wrap">
+        <div class="eyebrow">PYLSA · Tarjetas de Combustible 2026</div>
+        <h1>Antes de empezar</h1>
+        <div class="subhead">${b ? `Sucursal <b>${esc(b.nombre)}</b>. ` : ''}Lee con atención estas instrucciones. Solo podrás continuar cuando confirmes que las leíste.</div>
+      </div>
+    </header>
+    <div class="wrap">
+      <ol class="steps">
+        <li><b>Identifica tu tipo de tarjeta.</b> Hay dos tipos. En cada unidad elige el que se parece a la suya y copia <b>solo el número marcado en verde</b>:
+          <div class="ex-grid">
+            <figure><div class="ex-img">${svgDriveTag(true)}</div><figcaption><b>DriveTAG</b> · copia el <b>No. Fleet</b>. No el de Combustible ni el de Peaje.</figcaption></figure>
+            <figure><div class="ex-img ex-v">${svgTicketCar(true)}</div><figcaption><b>Ticket Car</b> · copia el <b>número de arriba</b>. No el del código de barras.</figcaption></figure>
+          </div>
+        </li>
+        <li><b>Foto de la tarjeta.</b> Toma la foto de <b>la tarjeta de combustible de esa misma unidad</b>: completa, enfocada, con buena luz y con el número legible.</li>
+        <li><b>No se acepta otra cosa.</b> No subas fotos de la tarjeta de circulación, la licencia, la unidad, capturas de pantalla ni cualquier otra imagen.</li>
+        <li><b>Revisa antes de seguir.</b> Comprueba que el número que escribiste sea el mismo que aparece en la foto y que la tarjeta corresponda a esa unidad.</li>
+        <li><b>Unidades que no aparecen.</b> Si en tu sucursal hay alguna unidad que no está en la lista, incluidos montacargas y autos utilitarios, agrégala al final con su tarjeta.</li>
+        <li><b>Nunca el NIP.</b> No escribas ni fotografíes el NIP de la tarjeta.</li>
+      </ol>
+      <div class="alert">
+        <div class="alert-title">Importante</div>
+        Cada número y cada foto se van a revisar. <b>Si la información no se captura correctamente o la foto no corresponde a la tarjeta de combustible de la unidad, esa tarjeta se desactivará y no podrás cargar combustible</b> hasta que se corrija.
+      </div>
+      <label class="agree">
+        <input type="checkbox" id="agreeChk">
+        <span>Leí y entiendo las instrucciones. Sé que si la información es incorrecta la tarjeta se desactivará.</span>
+      </label>
+      <button class="submit-btn agree-btn" id="agreeBtn" disabled>De acuerdo</button>
+    </div>`;
+  const chk = document.getElementById('agreeChk'), btn = document.getElementById('agreeBtn');
+  chk.addEventListener('change', () => { btn.disabled = !chk.checked; });
+  btn.addEventListener('click', () => {
+    aceptacion = new Date().toISOString();
+    start(); window.scrollTo(0,0);
+  });
+}
+
+/* ---------- SELECTOR DE SUCURSAL ---------- */
+function renderBranchSelector(){
+  const names = Object.keys(FLEET_DATA).sort();
+  app.innerHTML = `
+    <div class="wrap center-screen">
+      <div class="eyebrow">PYLSA · Tarjetas de Combustible 2026</div>
+      <h1>Selecciona tu sucursal</h1>
+      <p>Este formulario se comparte con un enlace individual por sucursal. Si llegaste aquí sin uno, elige tu sucursal de la lista para continuar.</p>
+      <div class="branch-list">
+        ${names.map(slug => `<a href="?sucursal=${slug}" data-slug="${slug}">${esc(FLEET_DATA[slug].nombre)} <span>${FLEET_DATA[slug].unidades.length + (FLEET_DATA[slug].especiales || []).length} unidad(es)</span></a>`).join('')}
+      </div>
+    </div>`;
+  // Se abre el formulario con JavaScript (funciona también dentro de visores que no recargan la URL)
+  app.querySelectorAll('.branch-list a').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    const slug = a.dataset.slug;
+    try { history.pushState({slug}, '', '?sucursal=' + slug); } catch(err) {}
+    renderForm(FLEET_DATA[slug], slug);
+    window.scrollTo(0,0);
+  }));
+}
+window.addEventListener('popstate', () => {
+  if (!aceptacion) return;
+  const s = (getParam('sucursal') || '').toLowerCase();
+  if (FLEET_DATA[s]) renderForm(FLEET_DATA[s], s); else renderBranchSelector();
+});
+
+/* ---------- FORMULARIO ---------- */
+function renderForm(branch, slug){
+  const state = branch.unidades.map((u,i) => ({
+    key: 'u' + i, origen: 'LISTADA', eco: u.eco, tipo: u.tipo, placa: u.placa, placa_nueva: '',
+    tiene: true, tarjeta: '', foto: null, comentario: ''
+  }));
+  // Montacargas y autos utilitarios conocidos de la sucursal (sin económico ni placa precargados)
+  (branch.especiales || []).forEach((e,i) => state.push({
+    key: 'e' + i, origen: 'ESPECIAL', eco: '', tipo: e.tipo, modelo: e.modelo || '', marca: '', serie: '', placa: '', placa_nueva: '',
+    tiene: true, tarjeta: '', foto: null, comentario: ''
+  }));
+  let extraSeq = 0;
+
+  app.innerHTML = `
+    <header>
+      <div class="wrap">
+        <div class="eyebrow">PYLSA · Tarjetas de Combustible 2026 · <button type="button" id="changeBranch">Cambiar sucursal</button></div>
+        <h1>${esc(branch.nombre)}</h1>
+        <div class="subhead">Para cada unidad elige el tipo de tarjeta, escribe su número y toma una foto. Si tienes alguna unidad que no aparece aquí, agrégala al final con su tarjeta.</div>
+        <div class="warn">No escribas ni fotografíes el NIP. Solo se pide el número impreso al frente de la tarjeta.</div>
+        <div class="progress-row">
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="progress-label" id="progressLabel">0 / ${state.length}</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <div class="section-title">Unidades de la sucursal</div>
+      <div class="units" id="unitsWrap"></div>
+
+      ${(branch.especiales || []).length ? `
+      <div class="section-title">Montacargas y autos utilitarios</div>
+      <p class="section-note">Captura también la tarjeta de estas unidades. Los montacargas se identifican por marca y número de serie.</p>
+      <div class="units" id="especialesWrap"></div>` : ''}
+
+      <div class="section-title">Unidades no listadas</div>
+      <p class="section-note">¿Tienes en tu sucursal alguna unidad que no aparece arriba? Agrégala con su tarjeta.</p>
+      <div class="units" id="extrasWrap"></div>
+      <button type="button" class="add-btn" id="addBtn">+ Agregar unidad no listada</button>
+    </div>
+
+    <div class="footer-bar">
+      <div id="errSlot"></div>
+      <div class="footer-inner">
+        <div class="footer-status" id="footerStatus"></div>
+        <button class="submit-btn" id="submitBtn" disabled>Enviar tarjetas</button>
+      </div>
+    </div>`;
+
+  document.getElementById('changeBranch').addEventListener('click', () => {
+    if (state.some(s => s.tarjeta || s.foto) && !confirm('Se perderá lo que capturaste. ¿Cambiar de sucursal?')) return;
+    try { history.pushState({}, '', location.pathname); } catch(e) {}
+    renderBranchSelector(); window.scrollTo(0,0);
+  });
+
+
+  const unitsWrap = document.getElementById('unitsWrap');
+  const extrasWrap = document.getElementById('extrasWrap');
+  state.forEach(s => { (s.origen === 'ESPECIAL' ? document.getElementById('especialesWrap') : unitsWrap).appendChild(buildCard(s)); });
+
+  document.getElementById('addBtn').addEventListener('click', () => {
+    const s = { key: 'x' + (extraSeq++), origen: 'AGREGADA', eco: '', tipo: '', marca: '', serie: '', placa: '', placa_nueva: '',
+                tiene: true, tarjeta: '', foto: null, comentario: '' };
+    state.push(s);
+    const card = buildCard(s);
+    extrasWrap.appendChild(card);
+    card.querySelector('select').focus();
+    updateProgress();
+  });
+
+  function tarjetaBlock(s){
+    return `
+      <div class="field-group">
+        <div class="field-label">Tipo de tarjeta</div>
+        <div class="ctype-row">
+          ${Object.entries(TIPOS_TARJETA).map(([k,v]) => `<button type="button" class="ctype" data-ctype="${k}"><span class="ctype-img${k === 'TICKETCAR' ? ' v' : ''}">${v.svg(false)}</span><span class="ctype-txt"><b>${v.nombre}</b><small>${v.desc}</small></span></button>`).join('')}
+        </div>
+      </div>
+      <div class="field-group reveal" data-f="numBlock">
+        <div class="field-label" data-f="numLabel">Número de tarjeta</div>
+        <input type="text" class="card-num" data-f="tarjeta" maxlength="19" placeholder="0000 0000 0000 0000" autocomplete="off" autocapitalize="characters">
+        <div class="hint" data-f="ayuda"></div>
+        <div class="hint" data-hint="tarjeta"></div>
+        <div class="photo-row">
+          <label class="photo-btn" data-f="fotoBtn">Tomar o subir foto de la tarjeta<input type="file" accept="image/*" capture="environment" data-f="foto"></label>
+          <img class="thumb" data-f="thumb" alt="Foto de la tarjeta">
+        </div>
+      </div>`;
+  }
+
+  function mcFields(){
+    return `
+        <div class="two field-group">
+          <div><div class="field-label">Marca</div><input type="text" data-f="marca" placeholder="Ej. YALE" autocomplete="off"></div>
+          <div><div class="field-label">Número de serie</div><input type="text" data-f="serie" placeholder="Viene en la placa del equipo" autocomplete="off"><div class="hint" data-hint="serie"></div></div>
+        </div>`;
+  }
+
+  function buildCard(s){
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = 'card-' + s.key;
+    if (s.origen === 'LISTADA') {
+      card.innerHTML = `
+        <div class="card-top">
+          <div>
+            <div class="veh-name">${esc(s.tipo)}</div>
+            <div class="eco-big"><small>Económico</small>U-${esc(s.eco)}</div>
+          </div>
+        </div>
+        <div class="row-line">PLACA&nbsp;${s.placa ? `<b>${esc(s.placa)}</b>` : `<b class="pend">PENDIENTE</b>`}</div>
+        ${s.placa ? '' : `<div class="field-group"><div class="field-label">Placa (si ya la tiene)</div><input type="text" data-f="placa_nueva" placeholder="Opcional" autocomplete="off"></div>`}
+        ${tarjetaBlock(s)}`;
+    } else if (s.origen === 'ESPECIAL') {
+      card.innerHTML = `
+        <div class="card-top">
+          <div>
+            <div class="veh-name">${esc(s.tipo)}</div>
+            <div class="veh-modelo">${esc(s.modelo || (ES_MC(s.tipo) ? 'Sin económico ni placa' : 'Sin número económico registrado'))}</div>
+          </div>
+          <div class="tag"><span>${ES_MC(s.tipo) ? 'MONTACARGAS' : 'UTILITARIO'}</span></div>
+        </div>
+        ${ES_MC(s.tipo) ? mcFields() : `
+        <div class="two">
+          <div><div class="field-label">No. económico (si tiene)</div><input type="text" data-f="eco" placeholder="Opcional" autocomplete="off"><div class="hint" data-hint="eco"></div></div>
+          <div><div class="field-label">Placa (si tiene)</div><input type="text" data-f="placa" placeholder="Opcional" autocomplete="off"></div>
+        </div>`}
+        ${tarjetaBlock(s)}`;
+    } else {
+      card.innerHTML = `
+        <div class="card-top">
+          <div>
+            <div class="veh-name">Unidad no listada</div>
+            <div class="veh-modelo">Se revisará antes de darla de alta</div>
+          </div>
+          <button type="button" class="remove-btn" data-f="remove">Quitar</button>
+        </div>
+        <div><div class="field-label">Tipo</div><select data-f="tipo"><option value="">Elegir…</option>${TIPOS.map(t => `<option>${t}</option>`).join('')}</select></div>
+        <div data-f="stdBlock">
+          <div class="two field-group">
+            <div><div class="field-label" data-f="ecoLabel">No. económico</div><input type="text" data-f="eco" placeholder="Ej. 340" autocomplete="off"><div class="hint" data-hint="eco"></div></div>
+            <div><div class="field-label" data-f="placaLabel">Placa</div><input type="text" data-f="placa" placeholder="Ej. XR5288B" autocomplete="off"></div>
+          </div>
+        </div>
+        <div data-f="marcaBlock" class="reveal">
+          <div class="two field-group">
+            <div><div class="field-label">Marca</div><input type="text" data-f="marca" placeholder="Ej. CHEVROLET" autocomplete="off"></div>
+            <div data-f="serieBlock" class="reveal"><div class="field-label">Número de serie</div><input type="text" data-f="serie" placeholder="Viene en la placa del equipo" autocomplete="off"><div class="hint" data-hint="serie"></div></div>
+          </div>
+        </div>
+        ${tarjetaBlock(s)}
+        <div class="field-group"><div class="field-label">¿De dónde viene esta unidad?</div><textarea data-f="comentario" placeholder="Opcional. Ej. la prestó Matriz en septiembre"></textarea></div>`;
+    }
+    wireCard(card, s);
+    return card;
+  }
+
+  function wireCard(card, s){
+    const q = f => card.querySelector(`[data-f="${f}"]`);
+    const upper = el => el && el.addEventListener('input', () => { el.value = el.value.toUpperCase().replace(/[\s-]/g, ''); });
+    const wireMc = () => {
+      const marca = q('marca'), serie = q('serie');
+      if (!marca) return;
+      marca.addEventListener('input', () => { marca.value = marca.value.toUpperCase(); s.marca = marca.value.trim(); check(); });
+      upper(serie);
+      serie.addEventListener('input', () => { s.serie = serie.value; check(); });
+    };
+
+    if (s.origen === 'LISTADA') {
+      const pn = q('placa_nueva');
+      if (pn) { upper(pn); pn.addEventListener('input', () => { s.placa_nueva = pn.value; }); }
+    } else if (s.origen === 'ESPECIAL') {
+      wireMc();
+      const eco = q('eco'), placa = q('placa');
+      if (eco) { upper(eco); eco.addEventListener('input', () => { s.eco = eco.value; check(); }); }
+      if (placa) { upper(placa); placa.addEventListener('input', () => { s.placa = placa.value; }); }
+    } else {
+      wireMc();
+      const eco = q('eco'), tipo = q('tipo'), placa = q('placa'), com = q('comentario');
+      upper(eco); upper(placa);
+      eco.addEventListener('input', () => { s.eco = eco.value; check(); });
+      tipo.addEventListener('change', () => {
+        s.tipo = tipo.value;
+        const mc = ES_MC(s.tipo);
+        q('stdBlock').classList.toggle('reveal', mc);
+        const auto = s.tipo === 'AUTO UTILITARIO';
+        q('marcaBlock').classList.toggle('show', mc || auto);
+        q('serieBlock').classList.toggle('show', mc);
+        q('marca').placeholder = mc ? 'Ej. YALE' : 'Ej. CHEVROLET';
+        if (mc) { s.eco = ''; eco.value = ''; s.placa = ''; placa.value = ''; }
+        if (!mc) { s.serie = ''; q('serie').value = ''; }
+        if (!mc && !auto) { s.marca = ''; q('marca').value = ''; }
+        const opc = SIN_ECO.includes(s.tipo);
+        q('ecoLabel').textContent = opc ? 'No. económico (si tiene)' : 'No. económico';
+        q('placaLabel').textContent = opc ? 'Placa (si tiene)' : 'Placa';
+        eco.placeholder = opc ? 'Opcional' : 'Ej. 340';
+        check();
+      });
+      placa.addEventListener('input', () => { s.placa = placa.value; });
+      com.addEventListener('input', () => { s.comentario = com.value; });
+      q('remove').addEventListener('click', () => {
+        state.splice(state.indexOf(s), 1);
+        card.remove(); updateProgress();
+      });
+    }
+
+    card.querySelectorAll('.ctype').forEach(b => b.addEventListener('click', () => {
+      s.ctipo = b.dataset.ctype;
+      const def = TIPOS_TARJETA[s.ctipo];
+      card.querySelectorAll('.ctype').forEach(o => o.classList.toggle('active', o === b));
+      q('numBlock').classList.add('show');
+      q('numLabel').textContent = def.label;
+      q('ayuda').textContent = def.ayuda;
+      q('tarjeta').setAttribute('inputmode', def.inputmode);
+      q('tarjeta').focus();
+      check();
+    }));
+    const tj = q('tarjeta');
+    tj.addEventListener('input', () => { tj.value = fmtCard(tj.value); s.tarjeta = digits(tj.value); check(); });
+
+    const file = q('foto');
+    file.addEventListener('change', async () => {
+      const f = file.files[0]; if (!f) return;
+      const btn = q('fotoBtn');
+      btn.firstChild.textContent = 'Procesando…';
+      try {
+        s.foto = await compress(f);
+        const th = q('thumb'); th.src = URL.createObjectURL(s.foto); th.classList.add('show');
+        btn.classList.add('has'); btn.firstChild.textContent = 'Foto lista · cambiar';
+      } catch(e) {
+        btn.firstChild.textContent = 'Tomar o subir foto de la tarjeta';
+        alert('No se pudo leer la imagen. Intenta tomar la foto de nuevo.');
+      }
+      check();
+    });
+  }
+
+  function compress(file){
+    return new Promise((res, rej) => {
+      const img = new Image();
+      img.onload = () => {
+        const r = Math.min(1, 1600 / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob(b => b ? res(b) : rej(), 'image/jpeg', 0.82);
+      };
+      img.onerror = rej;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  /* Revisión: una unidad queda lista cuando tiene 16 dígitos + foto,
+     sin repetir tarjeta ni económico */
+  function evaluate(){
+    const porTarjeta = {}, porEco = {}, porSerie = {};
+    const nombre = o => o.eco ? 'U-' + o.eco : (o.serie ? 'serie ' + o.serie : o.tipo.toLowerCase() || 'agregada');
+    state.forEach(s => {
+      if (s.tarjeta.length === 16) (porTarjeta[s.tarjeta] = porTarjeta[s.tarjeta] || []).push(s);
+      if (s.eco) (porEco[s.eco] = porEco[s.eco] || []).push(s);
+      if (ES_MC(s.tipo) && s.serie) (porSerie[s.serie] = porSerie[s.serie] || []).push(s);
+    });
+    state.forEach(s => {
+      s.dupTarjeta = s.tarjeta.length === 16 && porTarjeta[s.tarjeta].length > 1
+        ? porTarjeta[s.tarjeta].filter(o => o !== s).map(nombre) : null;
+      s.dupSerie = ES_MC(s.tipo) && s.serie && porSerie[s.serie].length > 1;
+      s.dupEco = s.origen !== 'LISTADA' && s.eco && porEco[s.eco].length > 1;
+      let datosExtra;
+      if (s.origen === 'LISTADA') datosExtra = true;
+      else if (ES_MC(s.tipo)) datosExtra = s.marca && s.serie && !s.dupSerie;
+      else if (s.origen === 'ESPECIAL') datosExtra = !s.dupEco;
+      else if (s.tipo === 'AUTO UTILITARIO') datosExtra = s.marca && !s.dupEco;
+      else datosExtra = s.tipo && (s.eco || SIN_ECO.includes(s.tipo)) && !s.dupEco;
+      s.reviewed = !!datosExtra && !!s.ctipo && s.tarjeta.length === 16 && !!s.foto && !s.dupTarjeta;
+    });
+  }
+
+  function check(){
+    evaluate();
+    state.forEach(s => {
+      const card = document.getElementById('card-' + s.key); if (!card) return;
+      card.classList.toggle('is-ok', s.reviewed);
+      card.classList.toggle('is-error', !!s.dupTarjeta || !!s.dupEco || !!s.dupSerie);
+      const h = card.querySelector('[data-hint="tarjeta"]'), tj = card.querySelector('[data-f="tarjeta"]');
+      if (h) {
+        let msg = '', err = false;
+        if (s.dupTarjeta) { msg = `Esta tarjeta ya está en la unidad ${s.dupTarjeta.join(', ')}. Cada tarjeta es de una sola unidad.`; err = true; }
+        else if (s.tarjeta.length > 0 && s.tarjeta.length < 16) msg = `Faltan ${16 - s.tarjeta.length} caracteres`;
+        else if (s.tarjeta.length === 16 && !s.foto) msg = 'Falta la foto de la tarjeta';
+        h.textContent = msg; h.classList.toggle('err', err); tj.classList.toggle('bad', err);
+      }
+      const he = card.querySelector('[data-hint="eco"]');
+      if (he) { he.textContent = s.dupEco ? 'Este económico ya está en la lista' : ''; he.classList.toggle('err', !!s.dupEco); }
+      const hs = card.querySelector('[data-hint="serie"]');
+      if (hs) { hs.textContent = s.dupSerie ? 'Este número de serie ya está en la lista' : ''; hs.classList.toggle('err', !!s.dupSerie); }
+    });
+    updateProgress();
+  }
+
+  function updateProgress(){
+    evaluate();
+    const total = state.length, done = state.filter(s => s.reviewed).length;
+    document.getElementById('progressFill').style.width = (total ? done / total * 100 : 0) + '%';
+    document.getElementById('progressLabel').textContent = `${done} / ${total}`;
+    document.getElementById('footerStatus').textContent = done < total
+      ? `Faltan ${total - done} unidad(es) por completar`
+      : 'Todas las unidades completas';
+    document.getElementById('submitBtn').disabled = done !== total;
+  }
+
+  check();
+  document.getElementById('submitBtn').addEventListener('click', () => submitForm(branch, slug, state));
+}
+
+/* ---------- ENVÍO ---------- */
+async function submitForm(branch, slug, state){
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  document.getElementById('errSlot').innerHTML = '';
+
+  const fd = new FormData();
+  const unidades = state.map(s => {
+    const foto = 'foto_' + s.key;
+    fd.append(foto, s.foto, foto + '.jpg');
+    return {
+      id: s.key,
+      origen: s.origen,
+      eco: s.eco.trim().toUpperCase(),
+      tipo: s.tipo,
+      modelo: s.modelo || '',
+      marca: (s.marca || '').trim(),
+      serie: (s.serie || '').trim(),
+      placa: (s.placa || s.placa_nueva || '').trim().toUpperCase(),
+      placa_pendiente: s.origen === 'LISTADA' && !s.placa,
+      tipo_tarjeta: s.ctipo === 'DRIVETAG' ? 'DRIVETAG' : 'TICKET CAR',
+      tarjeta: fmtCard(s.tarjeta),
+      comentario: s.comentario.trim(),
+      foto
+    };
+  });
+  fd.append('sucursal', slug);
+  fd.append('sucursal_nombre', branch.nombre);
+  fd.append('acepto_instrucciones', aceptacion || '');
+  fd.append('payload', JSON.stringify({ unidades }));
+
+  try {
+    const res = await fetch(WEBHOOK_URL, { method: 'POST', body: fd });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    renderSuccess(branch.nombre, unidades);
+  } catch (err) {
+    btn.disabled = false; btn.textContent = 'Enviar tarjetas';
+    document.getElementById('errSlot').innerHTML = `<div class="err-banner">No se pudo conectar con el servidor (${esc(err.message)}). Tus datos y fotos siguen aquí: revisa tu conexión y vuelve a pulsar <b>Enviar tarjetas</b>.</div>`;
+  }
+}
+
+function renderSuccess(nombre, us){
+  const add = us.filter(u => u.origen === 'AGREGADA').length;
+  app.innerHTML = `
+    <div class="wrap center-screen">
+      <div class="ok-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="#4FA6A0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h1>Tarjetas enviadas</h1>
+      <p>Gracias. Se registraron las tarjetas de combustible de <b>${esc(nombre)}</b>.</p>
+      <div class="summary">
+        <div>Unidades reportadas <b>${us.length}</b></div>
+        <div>Unidades agregadas <b>${add}</b></div>
+      </div>
+    </div>`;
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
